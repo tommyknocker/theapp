@@ -67,3 +67,8 @@ define('ERR_NO_ARGUMENTS', 'No arguments');
  */
 define('ENGINE_MODE_WEB', 'web');
 define('ENGINE_MODE_CLI', 'cli');
+
+/**
+ * Log
+ */
+define('LOG_DEFAULT_TAG', 'Debug');
