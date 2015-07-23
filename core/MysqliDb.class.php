@@ -17,13 +17,6 @@ namespace core;
 class MysqliDb {
 
     /**
-     * Static instance of self
-     *
-     * @var MysqliDb
-     */
-    protected static $_instance;
-
-    /**
      * Table prefix
      * 
      * @var string
@@ -135,7 +128,7 @@ class MysqliDb {
     protected $traceEnabled;
     protected $traceStripPrefix;
     public $trace = array();
-    
+
     /**
      * Connection flag
      * @var boolean 
@@ -168,7 +161,7 @@ class MysqliDb {
         $this->db = $db;
         $this->port = $port;
         $this->charset = $charset;
-
+                
         if ($isSubQuery) {
             $this->isSubQuery = true;
             return;
@@ -176,22 +169,21 @@ class MysqliDb {
 
         // for subqueries we do not need database connection and redefine root instance
         //if (!is_object($host))
-          //  $this->connect();
+        //  $this->connect();
 
-        $this->setPrefix();
-        self::$_instance = $this;
+        $this->setPrefix();                
     }
 
     /**
      * Lazy initialization
      */
     private function checkConnect() {
-        if(!$this->isConnected) {
+        if (!$this->isConnected) {
             $this->connect();
             $this->isConnected = true;
         }
     }
-    
+
     /**
      * A method to connect to the database
      *
@@ -201,26 +193,16 @@ class MysqliDb {
             return;
 
         if (empty($this->host))
-            die('Mysql host is not set');
+            throw new Exception('Mysql host is not set');
 
-        $this->_mysqli = new \mysqli($this->host, $this->username, $this->password, $this->db, $this->port)
-                or die('There was a problem connecting to the database');
+        $this->_mysqli = new \mysqli($this->host, $this->username, $this->password, $this->db, $this->port);
+
+        if (!$this->_mysqli) {
+            throw new Exception('There was a problem connecting to the database');
+        }
 
         if ($this->charset)
             $this->_mysqli->set_charset($this->charset);
-    }
-
-    /**
-     * A method of returning the static instance to allow access to the
-     * instantiated object from within another class.
-     * Inheriting this class would require reloading connection info.
-     *
-     * @uses $db = MySqliDb::getInstance();
-     *
-     * @return object Returns the current instance.
-     */
-    public static function getInstance() {
-        return self::$_instance;
     }
 
     /**
@@ -248,7 +230,6 @@ class MysqliDb {
      */
     public function setPrefix($prefix = '') {
         self::$prefix = $prefix;
-        return $this;
     }
 
     /**
@@ -261,9 +242,9 @@ class MysqliDb {
      * @return array Contains the returned rows from the query.
      */
     public function rawQuery($query, $bindParams = null, $sanitize = true) {
-        
+
         $this->checkConnect();
-        
+
         $params = array(''); // Create the empty 0 index
         $this->_query = $query;
         if ($sanitize)
@@ -296,9 +277,9 @@ class MysqliDb {
      * @return array Contains the returned rows from the query.
      */
     public function query($query, $numRows = null) {
-        
+
         $this->checkConnect();
-        
+
         $this->_query = filter_var($query, FILTER_SANITIZE_STRING);
         $stmt = $this->_buildQuery($numRows);
         $stmt->execute();
@@ -315,8 +296,6 @@ class MysqliDb {
      * @uses $MySqliDb->setQueryOption('name');
      *
      * @param string/array $options The optons name of the query.
-     *
-     * @return MysqliDb
      */
     public function setQueryOption($options) {
         $allowedOptions = Array('ALL', 'DISTINCT', 'DISTINCTROW', 'HIGH_PRIORITY', 'STRAIGHT_JOIN', 'SQL_SMALL_RESULT',
@@ -333,17 +312,13 @@ class MysqliDb {
             $this->_queryOptions[] = $option;
         }
 
-        return $this;
     }
 
     /**
      * Function to enable SQL_CALC_FOUND_ROWS in the get queries
-     *
-     * @return MysqliDb
      */
     public function withTotalCount() {
         $this->setQueryOption('SQL_CALC_FOUND_ROWS');
-        return $this;
     }
 
     /**
@@ -356,9 +331,9 @@ class MysqliDb {
      * @return array Contains the returned rows from the select query.
      */
     public function get($tableName, $numRows = null, $columns = '*') {
-        
+
         $this->checkConnect();
-        
+
         if (empty($columns))
             $columns = '*';
 
@@ -367,8 +342,9 @@ class MysqliDb {
                 $column . " FROM " . self::$prefix . $tableName;
         $stmt = $this->_buildQuery($numRows);
 
-        if ($this->isSubQuery)
-            return $this;
+        if ($this->isSubQuery) {
+            return;
+        }
 
         $stmt->execute();
         $this->_stmtError = $stmt->error;
@@ -390,7 +366,7 @@ class MysqliDb {
 
         if (is_object($res))
             return $res;
-        
+
         if (isset($res[0]))
             return $res[0];
 
@@ -421,7 +397,7 @@ class MysqliDb {
      *
      * @return boolean Boolean indicating whether the insert query was completed succesfully.
      */
-    public function insert($tableName, $insertData) {        
+    public function insert($tableName, $insertData) {
         return $this->_buildInsert($tableName, $insertData, 'INSERT');
     }
 
@@ -459,9 +435,9 @@ class MysqliDb {
      * @return boolean
      */
     public function update($tableName, $tableData) {
-        
+
         $this->checkConnect();
-        
+
         if ($this->isSubQuery)
             return;
 
@@ -486,9 +462,9 @@ class MysqliDb {
      * @return boolean Indicates success. 0 or 1.
      */
     public function delete($tableName, $numRows = null) {
-        
+
         $this->checkConnect();
-        
+
         if ($this->isSubQuery)
             return;
 
@@ -510,10 +486,9 @@ class MysqliDb {
      * @param string $whereProp  The name of the database field.
      * @param mixed  $whereValue The value of the database field.
      *
-     * @return MysqliDb
      */
     public function where($whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND') {
-        // forkaround for an old operation api
+        // forkaround for an old operation api        
         if (is_array($whereValue) && ($key = key($whereValue)) != "0") {
             $operator = $key;
             $whereValue = $whereValue[$key];
@@ -521,7 +496,6 @@ class MysqliDb {
         if (count($this->_where) == 0)
             $cond = '';
         $this->_where[] = Array($cond, $whereProp, $operator, $whereValue);
-        return $this;
     }
 
     /**
@@ -547,7 +521,6 @@ class MysqliDb {
      * @param string $joinCondition the condition.
      * @param string $joinType 'LEFT', 'INNER' etc.
      *
-     * @return MysqliDb
      */
     public function join($joinTable, $joinCondition, $joinType = '') {
         $allowedTypes = array('LEFT', 'RIGHT', 'OUTER', 'INNER', 'LEFT OUTER', 'RIGHT OUTER');
@@ -561,7 +534,6 @@ class MysqliDb {
 
         $this->_join[] = Array($joinType, $joinTable, $joinCondition);
 
-        return $this;
     }
 
     /**
@@ -572,7 +544,6 @@ class MysqliDb {
      * @param string $orderByField The name of the database field.
      * @param string $orderByDirection Order direction.
      *
-     * @return MysqliDb
      */
     public function orderBy($orderByField, $orderbyDirection = "DESC", $customFields = null) {
         $allowedDirection = Array("ASC", "DESC");
@@ -596,7 +567,6 @@ class MysqliDb {
         }
 
         $this->_orderBy[$orderByField] = $orderbyDirection;
-        return $this;
     }
 
     /**
@@ -606,13 +576,11 @@ class MysqliDb {
      *
      * @param string $groupByField The name of the database field.
      *
-     * @return MysqliDb
      */
     public function groupBy($groupByField) {
         $groupByField = preg_replace("/[^-a-z0-9\.\(\),_]+/i", '', $groupByField);
 
         $this->_groupBy[] = $groupByField;
-        return $this;
     }
 
     /**
@@ -730,9 +698,9 @@ class MysqliDb {
      * @return boolean Boolean indicating whether the insert query was completed succesfully.
      */
     private function _buildInsert($tableName, $insertData, $operation) {
-        
+
         $this->checkConnect();
-        
+
         if ($this->isSubQuery)
             return;
 
@@ -1267,7 +1235,7 @@ class MysqliDb {
      *
      * @uses mysqli->rollback();
      */
-    public function _transaction_status_check() {        
+    public function _transaction_status_check() {
         if (!$this->_transaction_in_progress)
             return;
         $this->rollback();
@@ -1282,7 +1250,6 @@ class MysqliDb {
     public function setTrace($enabled, $stripPrefix = null) {
         $this->traceEnabled = $enabled;
         $this->traceStripPrefix = $stripPrefix;
-        return $this;
     }
 
     /**
@@ -1301,4 +1268,3 @@ class MysqliDb {
     }
 
 }
-
