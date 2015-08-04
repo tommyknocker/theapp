@@ -137,7 +137,7 @@ class App {
             throw new Exception("Class " . $app->currentObject . " has no method " . $method);
         }
 
-        if (in_array('result', $params)) {
+        if (in_array('result', $params, true)) {
             $params[array_search('result', $params)] = $app->objects[$app->currentObject]['result'];
         }
         
@@ -189,7 +189,7 @@ class App {
         $app->objects[$name]['instance'] = $obj->getConstructor() ? $obj->newInstanceArgs($args) : $obj->newInstance();
         $app->currentObject = $currentObject;
         $traits = $obj->getTraitNames();
-        $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits);
+        $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
         $app->objects[$name]['result'] = null;
                
         return $app;        
@@ -220,7 +220,7 @@ class App {
         $app->objects[$name] = [];
         $app->objects[$name]['instance'] = $object;
         $traits = $reflection->getTraitNames();
-        $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits);
+        $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
         $app->objects[$name]['result'] = null;
         
         return $app;
