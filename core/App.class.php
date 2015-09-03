@@ -263,17 +263,4 @@ class App
     {
         return self::__callStatic($name, $args);
     }
-
-    /**
-     * Destruct everything correctly
-     */
-    public function __destruct()
-    {
-        unset($errors);
-        $this->objects = null;
-        unset($this->objects);
-        $this->currentObject = null;
-        unset($this->currentObject);
-        self::$instance = null;
-    }
 }
