@@ -7,6 +7,14 @@
  */
 namespace core;
 
+if (defined('DEBUG') && DEBUG) {
+    ini_set('display_errors', 'on');
+    error_reporting(E_ALL);
+} else {
+    error_reporting(E_ALL ^ E_STRICT ^ E_NOTICE);
+    ini_set('display_errors', 'off');
+}
+
 require_once 'App.class.php';
 require_once 'Autoload.class.php';
 require_once 'ErrorsHandler.class.php';
@@ -19,16 +27,7 @@ App::Autoload()->addNameSpace('core')->addPath(DIR_ROOT . 'core')->addExt('.clas
     ->addPath(DIR_ROOT . 'models')->addExt('.model.php')->register()
     ->addPath(DIR_ROOT . 'classes')->addExt('.class.php')->register();
 
-ini_set('display_errors', 'on');
-
-if (defined('DEBUG') && DEBUG) {
-    error_reporting(E_ALL);
-    App::Log(ERR_DEBUG);
-} else {
-    error_reporting(E_ALL ^ E_STRICT ^ E_NOTICE);
-    App::Log(ERR_WARN);
-}
-
+App::Log(defined('DEBUG') && DEBUG ? ERR_DEBUG : ERR_WARN);
 App::Container()->errors = [];
 
 App::Container()->errorsTranslation = [
@@ -45,7 +44,7 @@ register_shutdown_function(['\\core\\ErrorsHandler', 'fatalErrorHandler']);
 set_error_handler(['\\core\\ErrorsHandler', 'errorHandler']);
 set_exception_handler(['\\core\\ErrorsHandler', 'exceptionHandler']);
 
-App::Config(DIR_DATA . 'config.ini.php');
+App::Config(DIR_DATA . 'config.json.php');
 App::Engine()->start();
 
 $errors = App::Container()->get('errors')->result;
