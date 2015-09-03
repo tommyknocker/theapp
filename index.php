@@ -6,6 +6,9 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 define('TIMER_START', microtime());
-require_once 'Constants.php';
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once 'data' . DS . 'constants.php';
 require_once 'core' . DS . 'AppInit.php';
+
 App::Event()->fire('system:execution_time', microtime() - TIMER_START);
