@@ -10,86 +10,16 @@ namespace core;
 class Config
 {
 
-    public function __construct($mainConfigFile)
-    {
-        $parsedData = $this->parse($mainConfigFile);
-
-        if (!array_key_exists('default', $parsedData)) {
-            throw new \Exception($mainConfigFile . ' must contain default section.');
-        }
-
-        $preparedServerName = str_replace('.', '_', filter_input(INPUT_SERVER, 'SERVER_NAME', FILTER_SANITIZE_STRING));
-
-        $config = $parsedData['default'];
-
-        if ($preparedServerName && array_key_exists($preparedServerName, $parsedData)) {
-            $config = array_replace_recursive($config, $parsedData[$preparedServerName]);
-        }
-
-        \App::Container()->config = $config;
-    }
-
     /**
-     * Read config file and store it in Container
-     * @param string $configFile          Path to a config file
-     * @param string|false $configStorage If string, parsed array will be added to Container
-     *                                    config storage. If false, it will be returned
-     * @throws Exception
-     * @return array|true
+     * Configuration file
+     * @var string
      */
-    public function parse($configFile, $configStorage = false)
+    private $configFile = "";
+
+    public function __construct($configFile)
     {
-
-        if (!file_exists($configFile) || !is_readable($configFile)) {
-            throw new \Exception('Config file ' . $configFile . ' does not exist or not readable');
-        }
-
-
-        $data = parse_ini_file($configFile, true, false);
-
-        if (!is_array($data)) {
-            throw new \Exception('Bad config file ' . $configFile);
-        }
-
-        if ($configStorage) {
-
-            \App::Container()->config = array_replace_recursive(\App::Container()->config, $this->parseHelper([$configStorage => $data])
-            );
-            return true;
-        } else {
-            return $this->parseHelper($data);
-        }
-    }
-
-    /**
-     * Config parse helper function. It breaks keys that contains dots into arrays
-     * @param array $data Data recieved through parse_ini_file function
-     * @return array Parsed data
-     */
-    private function parseHelper($data)
-    {
-        $return = [];
-
-        foreach ($data as $key => $value) {
-
-            $currentPart = &$return;
-            $currentKey = $this->formatKey($key);
-
-            foreach ($currentKey as $keyPart) {
-
-                if (!array_key_exists($keyPart, $currentPart)) {
-                    $currentPart[$keyPart] = [];
-                } else if (!is_array($currentPart[$keyPart])) {
-                    throw new Exception('Something went wrong, key already exists and not an array - ' . $keyPart);
-                }
-
-                $currentPart = &$currentPart[$keyPart];
-            }
-
-            $currentPart = is_array($value) ? $this->parseHelper($value) : $value;
-        }
-
-        return $return;
+        $this->configFile = $configFile;
+        $this->read();
     }
 
     /**
@@ -121,13 +51,77 @@ class Config
         $config = \App::Container()->config;
 
         foreach ($key as $keyPart) {
-            if (array_key_exists($keyPart, $config)) {
-                $config = &$config[$keyPart];
+            if (!is_object($config)) {
+                return null;
+            }
+
+            if (property_exists($config, $keyPart)) {
+                $config = &$config->{$keyPart};
             } else {
                 return null;
             }
         }
 
         return $config;
+    }
+
+    /**
+     * Smart setter for config storage
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        $key = $this->formatKey(str_replace('_', '.', $name));
+
+        $config = \App::Container()->config;
+        $configPart = &$config;
+
+        foreach ($key as $keyPart) {
+            if (!is_object($configPart)) {
+                $configPart = new \stdClass();
+            }
+
+            $configPart = &$configPart->{$keyPart};
+        }
+
+        $configPart = $value;
+
+        \App::Container()->config = (object) array_replace_recursive((array) \App::Container()->config, (array) $config);
+    }
+
+    /**
+     * Read config file and store it in Container
+     * @throws Exception
+     * @return mixed
+     */
+    public function read()
+    {
+        if (!file_exists($this->configFile) || !is_readable($this->configFile)) {
+            throw new \Exception('Config file ' . $this->configFile . ' does not exist or not readable');
+        }
+
+        $data = json_decode(file_get_contents($this->configFile));
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception('Bad config file. Error code: ' . json_last_error());
+        }
+
+        \App::Container()->config = $data;
+    }
+
+    /**
+     * Write config to file
+     * @return mixed Number of bytes written of false
+     */
+    public function write()
+    {
+        if (!is_writable($this->configFile)) {
+            throw new \Exception('Config file ' . $configFile . ' is not writable');
+        }
+
+        $config = \App::Container()->config;
+
+        return file_put_contents($this->configFile, json_encode($config, JSON_PRETTY_PRINT));
     }
 }

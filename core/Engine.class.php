@@ -39,11 +39,10 @@ class Engine
      */
     private function loadDBClass()
     {
-
         $db = \App::Config()->db;
-
-        if ($db && array_key_exists('enabled', $db) && $db['enabled']) {
-            \App::ld('DB', new MysqliDb($db['host'], $db['login'], $db['password'], $db['name'], $db['port']));
+        
+        if ($db->enabled) {
+            \App::ld('DB', new MysqliDb($db->host, $db->login, $db->password, $db->name, $db->port));
         }
     }
 
