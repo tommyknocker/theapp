@@ -5,7 +5,6 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-
 /**
  * Current version of The App
  */
@@ -54,7 +53,7 @@ define('DIR_TEMPLATES', DIR_ROOT . 'templates' . DS);
  */
 define('ERR_OFF', 0);
 define('ERR_EMERG', 1);
-define('ERR_ALERT', 2); 
+define('ERR_ALERT', 2);
 define('ERR_CRIT', 3);
 define('ERR_ERR', 4);
 define('ERR_WARN', 5);

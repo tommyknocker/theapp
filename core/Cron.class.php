@@ -1,14 +1,14 @@
 <?php
-
-namespace core;
-
 /**
  * Cron helper methods
  * 
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-class Cron {
+namespace core;
+
+class Cron
+{
 
     /**
      * Pid of current process
@@ -21,7 +21,8 @@ class Cron {
      * @param string $cronName
      * @return bool|int Current pid or false if already locked  
      */
-    public function lock($cronName) {
+    public function lock($cronName)
+    {
 
         $lockFile = DIR_DATA_PID . $cronName . '.lock';
 
@@ -46,7 +47,8 @@ class Cron {
      * @param string $cronName
      * @return bool True, if unlocked
      */
-    public static function unlock($cronName) {
+    public static function unlock($cronName)
+    {
 
         $lockFile = DIR_DATA_PID . $cronName . '.lock';
 
@@ -56,5 +58,4 @@ class Cron {
 
         return false;
     }
-
 }

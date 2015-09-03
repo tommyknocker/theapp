@@ -1,21 +1,20 @@
 <?php
-
-namespace core;
-
 /**
  * Logger
  * 
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
+namespace core;
+
 class Log
 {
+
     /**
      * Current minimum logging threshold
      * @var int
      */
     private $_severityThreshold = ERR_OFF;
-
     private $currentTag = LOG_DEFAULT_TAG;
 
     /**
@@ -28,19 +27,20 @@ class Log
         if ($severity === ERR_OFF) {
             return;
         }
-        
-        if($severity) {
+
+        if ($severity) {
             $this->_severityThreshold = $severity;
         }
     }
-    
+
     /**
      * Stops script execution
      */
-    public function stop() {
+    public function stop()
+    {
         exit();
     }
-    
+
     /**
      * Writes a $line to the log with a severity level of INFO. Any information
      * can be used here, or it could be used with E_STRICT errors
@@ -90,7 +90,6 @@ class Log
         $this->__log($line, ERR_ERR, $args);
     }
 
-
     /**
      * Writes a $line to the log with a severity level of ALERT.
      *
@@ -130,10 +129,11 @@ class Log
      * Set tag
      * @param string $tag
      */
-    public function tag($tag) {
+    public function tag($tag)
+    {
         $this->currentTag = $tag;
     }
-    
+
     /**
      * Writes a $line to the log with the given severity
      *
@@ -143,39 +143,37 @@ class Log
      */
     private function __log($line, $severity, $args = ERR_NO_ARGUMENTS)
     {
-        
+
         if ($this->_severityThreshold >= $severity) {
 
             $backtrace = debug_backtrace();
-            
+
             $skipClasses = ['core\\Log'];
-            
-            foreach($backtrace as $trace) {
-                
-                if(array_key_exists('class', $trace) && in_array($trace['class'], $skipClasses)) {
+
+            foreach ($backtrace as $trace) {
+
+                if (array_key_exists('class', $trace) && in_array($trace['class'], $skipClasses)) {
+                    continue;
+                } elseif ($trace['file'] == DIR_ROOT . 'core' . DS . 'App.class.php') {
                     continue;
                 }
-                elseif($trace['file'] == DIR_ROOT . 'core' . DS . 'App.class.php') {
-                    continue;
-                }
-                
+
                 break;
             }
-            
-            $log = [ 
-                'tag'           => $this->currentTag,
-                'name'          => $line,
-                'file'          => $trace ? $trace['file'] : 0,
-                'line'          => $trace ? $trace['line'] : 0,
-                'date_create'   => date('Y-m-d H:i:s'),
-                'type'          => $severity,
-                'data'          => print_r($args, true)
+
+            $log = [
+                'tag' => $this->currentTag,
+                'name' => $line,
+                'file' => $trace ? $trace['file'] : 0,
+                'line' => $trace ? $trace['line'] : 0,
+                'date_create' => date('Y-m-d H:i:s'),
+                'type' => $severity,
+                'data' => print_r($args, true)
             ];
-            
+
             $this->tag(LOG_DEFAULT_TAG);
-            
+
             \App::Container()->add('errors', $log);
         }
-               
     }
 }

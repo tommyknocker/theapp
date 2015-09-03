@@ -5,25 +5,23 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-
 namespace core;
 
 require_once 'App.class.php';
 require_once 'Autoload.class.php';
 require_once 'ErrorsHandler.class.php';
-
 use \App as App;
 
 App::Autoload()->addNameSpace('core')->addPath(DIR_ROOT . 'core')->addExt('.class.php')->register()
-               ->addPath(DIR_ROOT . 'abstract')->addExt('.class.php')->register()
-               ->addPath(DIR_ROOT . 'interfaces')->addExt('.interface.php')->register()
-               ->addPath(DIR_ROOT . 'traits')->addExt('.trait.php')->register()
-               ->addPath(DIR_ROOT . 'models')->addExt('.model.php')->register()
-               ->addPath(DIR_ROOT . 'classes')->addExt('.class.php')->register();
+    ->addPath(DIR_ROOT . 'abstract')->addExt('.class.php')->register()
+    ->addPath(DIR_ROOT . 'interfaces')->addExt('.interface.php')->register()
+    ->addPath(DIR_ROOT . 'traits')->addExt('.trait.php')->register()
+    ->addPath(DIR_ROOT . 'models')->addExt('.model.php')->register()
+    ->addPath(DIR_ROOT . 'classes')->addExt('.class.php')->register();
 
 ini_set('display_errors', 'on');
 
-if(defined('DEBUG') && DEBUG) {
+if (defined('DEBUG') && DEBUG) {
     error_reporting(E_ALL);
     App::Log(ERR_DEBUG);
 } else {
@@ -36,11 +34,11 @@ App::Container()->errors = [];
 App::Container()->errorsTranslation = [
     ERR_EMERG => 'Emergency',
     ERR_ALERT => 'Alert',
-    ERR_CRIT  => 'Critical',
-    ERR_ERR   => 'Error',
-    ERR_WARN  => 'Warning',
+    ERR_CRIT => 'Critical',
+    ERR_ERR => 'Error',
+    ERR_WARN => 'Warning',
     ERR_NOTICE => 'Notice',
-    ERR_DEBUG  => 'Debug'
+    ERR_DEBUG => 'Debug'
 ];
 
 register_shutdown_function(['\\core\\ErrorsHandler', 'fatalErrorHandler']);
