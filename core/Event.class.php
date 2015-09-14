@@ -11,12 +11,12 @@ class Event
 {
 
     /**
-     * Register class method to particular event
+     * Subscribe class method to particular event
      * 
      * @param string $event Event to register for
      * @param string $classMethod
      */
-    public function register($event, $classMethod)
+    public function subscribe($event, $classMethod)
     {
         $event = mb_strtolower($event, 'UTF-8');
         
