@@ -16,9 +16,14 @@ class Event
      * @param string $event Event to register for
      * @param string $classMethod
      */
-    public function register($eventPath, $classMethod)
+    public function register($event, $classMethod)
     {
-
+        $event = mb_strtolower($event, 'UTF-8');
+        
+        if(strpos($event, '/') !== false) {
+            $event = rtrim($event, '/') . '/';
+        }
+        
         $trace = debug_backtrace();
 
         $initFound = false;
@@ -52,9 +57,10 @@ class Event
                 throw new \Exception('Method must be public');
             }
 
-            \App::Container()->add('event:' . $eventPath, array($initMethod['class'], $classMethod));
+            \App::Container()->add('event:' . $event, array($initMethod['class'], $classMethod));
+            
         } catch (\Exception $e) {
-            \App::Log()->logError('Cannot register method ' . $classMethod . ' to event ' . $eventPath, $e->getMessage());
+            \App::Log()->logError('Cannot register method ' . $classMethod . ' to event ' . $event, $e->getMessage());
         }
     }
 
@@ -65,8 +71,14 @@ class Event
      */
     public function fire($event, $args = array())
     {
-        $methods = \App::Container()->get('event:' . $event)->result;
-
+        $event = mb_strtolower($event, 'UTF-8');
+        
+        if(strpos($event, '/') !== false) {
+            $event = rtrim($event, '/') . '/';
+        }        
+        
+        $methods = \App::Container()->get('event:' . $event)->result;        
+        
         if (!is_array($methods)) {
             $methods = array();
         }
