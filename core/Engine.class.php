@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use \App;
 
 class Engine
 {
@@ -51,24 +52,37 @@ class Engine
      */
     private function process()
     {
+        $requestMethod = $this->getRequestMethod();
+
+        if($requestMethod) {
+            \App::Event()->fire($this->getMode() . ':' . $requestMethod . ':before');
+        }
+        
         \App::Event()->fire($this->getMode() . ':before');
 
         $path = $this->getPath();
 
         if ($path) {
+            
+            if($requestMethod) {
+                \App::Event()->fire($this->getMode() . ':' . $requestMethod . ':' . $path . ':before')
+                    ->fire($this->getMode() . ':' . $requestMethod . ':' . $path)
+                    ->fire($this->getMode() . ':' . $requestMethod . ':' . $path . ':after');
+            }
+            
             \App::Event()->fire($this->getMode() . ':' . $path . ':before')
                 ->fire($this->getMode() . ':' . $path)
                 ->fire($this->getMode() . ':' . $path . ':after');
         }
 
-
         if (!\App::Event()->isFired($this->getMode() . ':' . $path)->result) {
-            if ($this->getMode() == ENGINE_MODE_WEB) {
-                header('HTTP/1.1 404 Not Found');
-            }
             \App::Event()->fire($this->getMode() . ':404');
         }
 
+        if($requestMethod) {
+            \App::Event()->fire($this->getMode() . ':' . $requestMethod . ':after');
+        }        
+        
         \App::Event()->fire($this->getMode() . ':after');
     }
 
@@ -82,7 +96,7 @@ class Engine
         if (!$this->path) {
             switch ($this->getMode()) {
                 case ENGINE_MODE_CLI:
-                    $path = $_SERVER['argc'] > 1 ? $_SERVER['argv'][1] : null;
+                    $path =  \App::Get()->server('argc')->result > 1 ?  \App::Get()->server('argv')->result[1] : null;
                     break;
                 case ENGINE_MODE_WEB:
                     $path = explode('?', \App::Get()->server('REQUEST_URI')->result)[0];
@@ -95,6 +109,14 @@ class Engine
         return $this->path;
     }
 
+    /**
+     * Get current server request method (post,put,get,delete, etc)
+     * @return string
+     */
+    public function getRequestMethod() {
+        return $this->getMode() == ENGINE_MODE_WEB ?  \App::Get()->server('REQUEST_METHOD')->result : '';
+    }
+                
     /**
      * Sets current engine mode
      */
@@ -153,8 +175,9 @@ class Engine
             $handler = array_shift($filePart);
 
             try {
-
-                $handlerReflection = new \ReflectionClass($handler);
+                                
+                $handlerReflection = new \ReflectionClass('\\App\\Handlers\\' . $handler);
+                                
 
                 if (!$handlerReflection->hasMethod('init')) {
                     throw new \Exception('No init method found');
@@ -171,6 +194,7 @@ class Engine
                 unset($handlerReflection);
                 unset($handlerReflectionMethod);
             } catch (\Exception $ex) {
+                
                 \App::Log()->logWarn('Cannot init handler ' . $handler, $ex->getMessage());
             }
         }
