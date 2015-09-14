@@ -53,13 +53,13 @@ class Engine
     private function process()
     {
         $requestMethod = $this->getRequestMethod();
+               
+        \App::Event()->fire($this->getMode() . ':before');
 
         if($requestMethod) {
             \App::Event()->fire($this->getMode() . ':' . $requestMethod . ':before');
-        }
+        }        
         
-        \App::Event()->fire($this->getMode() . ':before');
-
         $path = $this->getPath();
 
         if ($path) {
