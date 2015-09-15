@@ -45,6 +45,12 @@ set_error_handler(['\\core\\ErrorsHandler', 'errorHandler']);
 set_exception_handler(['\\core\\ErrorsHandler', 'exceptionHandler']);
 
 App::Config(DIR_DATA . 'config.json.php');
+
+// composer support
+if(file_exists(DIR_ROOT . 'vendor/autoload.php')) {
+    require_once DIR_ROOT . 'vendor/autoload.php';
+}
+
 App::Engine()->start();
 
 $errors = App::Container()->get('errors')->result;
