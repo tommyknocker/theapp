@@ -114,6 +114,8 @@ class Event
      */
     public function isFired($event)
     {
+        $event = mb_strtolower($event, 'UTF-8');
+        
         return \App::Container()->get('fired:' . $event)->result === 'yes';
     }
 }
