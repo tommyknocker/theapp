@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use App;
 
 class Cache
 {
@@ -20,10 +21,10 @@ class Cache
     public function __construct()
     {
 
-        \App::Autoload()->addNameSpace('cache')->addPath(DIR_ROOT . 'classes' . DS . 'cache')->addExt('.class.php')->register();
-        \App::Autoload()->addNameSpace('cache')->addPath(DIR_ROOT . 'interfaces' . DS . 'cache')->addExt('.interface.php')->register();
+        App::Autoload()->addNameSpace('cache')->addPath(DIR_ROOT . 'classes' . DS . 'cache')->addExt('.class.php')->register();
+        App::Autoload()->addNameSpace('cache')->addPath(DIR_ROOT . 'interfaces' . DS . 'cache')->addExt('.interface.php')->register();
 
-        switch (\App::Config()->cache_type) {
+        switch (App::Config()->cache_type) {
             case 'redis':
                 $this->cacheHandler = new \cache\Redis();
                 break;

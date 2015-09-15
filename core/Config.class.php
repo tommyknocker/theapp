@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use App, Exception;
 
 class Config
 {
@@ -48,7 +49,7 @@ class Config
     {
         $key = $this->formatKey(str_replace('_', '.', $name));
 
-        $config = \App::Container()->config;
+        $config = App::Container()->config;
 
         foreach ($key as $keyPart) {
             if (!is_object($config)) {
@@ -74,7 +75,7 @@ class Config
     {
         $key = $this->formatKey(str_replace('_', '.', $name));
 
-        $config = \App::Container()->config;
+        $config = App::Container()->config;
         $configPart = &$config;
 
         foreach ($key as $keyPart) {
@@ -87,7 +88,7 @@ class Config
 
         $configPart = $value;
 
-        \App::Container()->config = (object) array_replace_recursive((array) \App::Container()->config, (array) $config);
+        App::Container()->config = (object) array_replace_recursive((array) App::Container()->config, (array) $config);
     }
 
     /**
@@ -98,16 +99,16 @@ class Config
     public function read()
     {
         if (!file_exists($this->configFile) || !is_readable($this->configFile)) {
-            throw new \Exception('Config file ' . $this->configFile . ' does not exist or not readable');
+            throw new Exception('Config file ' . $this->configFile . ' does not exist or not readable');
         }
 
         $data = json_decode(file_get_contents($this->configFile));
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Bad config file. Error code: ' . json_last_error());
+            throw new Exception('Bad config file. Error code: ' . json_last_error());
         }
 
-        \App::Container()->config = $data;
+        App::Container()->config = $data;
     }
 
     /**
@@ -117,10 +118,10 @@ class Config
     public function write()
     {
         if (!is_writable($this->configFile)) {
-            throw new \Exception('Config file ' . $configFile . ' is not writable');
+            throw new Exception('Config file ' . $configFile . ' is not writable');
         }
 
-        $config = \App::Container()->config;
+        $config = App::Container()->config;
 
         return file_put_contents($this->configFile, json_encode($config, JSON_PRETTY_PRINT));
     }

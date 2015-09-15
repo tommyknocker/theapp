@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use App;
 
 if (defined('DEBUG') && DEBUG) {
     ini_set('display_errors', 'on');
@@ -18,7 +19,6 @@ if (defined('DEBUG') && DEBUG) {
 require_once 'App.class.php';
 require_once 'Autoload.class.php';
 require_once 'ErrorsHandler.class.php';
-use \App as App;
 
 App::Autoload()->addNameSpace('core')->addPath(DIR_ROOT . 'core')->addExt('.class.php')->register()
     ->addPath(DIR_ROOT . 'abstract')->addExt('.class.php')->register()

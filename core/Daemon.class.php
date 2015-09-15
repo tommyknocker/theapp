@@ -5,6 +5,7 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  */
 namespace core;
+use \App;
 
 class Daemon
 {

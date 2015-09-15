@@ -1,13 +1,12 @@
 <?php
-
-namespace App\Handlers;
-use \App;
-
 /**
- * The App.Pro site class
+ * Handler example
  *
  * @author Tommyknocker <tommyknocker@theapp.pro>
  */
+namespace App\Handlers;
+use App;
+
 class System
 {
 

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The App. Factory. Chainable
  *
@@ -22,7 +21,8 @@
  * @method \core\Tr \core\Tr
  * 
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
- * */
+ **/
+
 class App
 {
 

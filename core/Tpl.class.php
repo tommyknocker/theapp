@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use Exception;
 
 class Tpl
 {
@@ -31,7 +32,7 @@ class Tpl
     /**
      * Loads template
      * @param string $template
-     * @throws \Exception
+     * @throws Exception
      */
     public function load($template, $data = [])
     {
@@ -39,11 +40,11 @@ class Tpl
         $filePath = DIR_TEMPLATES . $template . '.php';
 
         if (!file_exists($filePath)) {
-            throw new \Exception('No such template: ' . $template);
+            throw new Exception('No such template: ' . $template);
         }
 
         if (!is_readable($filePath)) {
-            throw new \Exception('Template is not readable ' . $template);
+            throw new Exception('Template is not readable ' . $template);
         }
 
         require $filePath;
@@ -53,7 +54,6 @@ class Tpl
      * Loads template and return its content
      * @param string $template
      * @return string
-     * @throws \Exception
      */
     public function preLoad($template, $data = [])
     {

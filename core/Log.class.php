@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use App;
 
 class Log
 {
@@ -173,7 +174,7 @@ class Log
 
             $this->tag(LOG_DEFAULT_TAG);
 
-            \App::Container()->add('errors', $log);
+            App::Container()->add('errors', $log);
         }
     }
 }

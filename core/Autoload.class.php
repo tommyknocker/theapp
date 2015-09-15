@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
+use Exception;
 
 class Autoload
 {
@@ -28,16 +29,18 @@ class Autoload
     /**
      * Add path
      * @param string $path Directory
-     * @throws \Exception
+     * @throws Exception
      */
     public function addPath($path)
     {
 
-        if (!is_dir($path))
-            throw new \Exception('Path is not a directory: ' . $path);
+        if (!is_dir($path)) {
+            throw new Exception('Path is not a directory: ' . $path);
+        }
 
-        if (!is_readable($path))
-            throw new \Exception('Directory is not readable: ' . $path);
+        if (!is_readable($path)) {
+            throw new Exception('Directory is not readable: ' . $path);
+        }
 
         $this->params['path'] = $path;
     }
@@ -53,16 +56,18 @@ class Autoload
 
     /**
      * Register new autoload path
-     * @throws \Exception
+     * @throws Exception
      */
     public function register()
     {
 
-        if (!array_key_exists('path', $this->params))
-            throw new \Exception('No path\'s registered. Try addPath first');
+        if (!array_key_exists('path', $this->params)) {
+            throw new Exception('No path\'s registered. Try addPath first');
+        }
 
-        if (!array_key_exists('ext', $this->params))
+        if (!array_key_exists('ext', $this->params)) {
             $this->params['ext'] = '.php';
+        }
 
         $code = [];
 
