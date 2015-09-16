@@ -21,9 +21,92 @@ class Event
      */
     private $eventEmitter = null;
 
+    /**
+     * Event chains storage (for supporting pcre expressions in event)
+     * @var array
+     */
+    private $chains = [];
+
+    /**
+     * Matched elements for pcre event expressions
+     * @var array
+     */
+    private $matched = null;
+    
+    /**
+     * Randomly generated chain replacer
+     * @var string 
+     */
+    private $chainReplacer = "";
+
     public function __construct()
     {
         $this->eventEmitter = new EventEmitter();
+        $this->chainReplacer = '{' . App::UUID()->v4()->result . '}';
+    }
+
+    /**
+     * Determine and proceed with event expressions
+     * @param string $event
+     * @return string
+     */
+    private function proceedExpressions($event)
+    {
+        $this->matched = null;
+        
+        $eventChain = explode('/', $event);
+
+        if (!$this->chains) {
+            return $event;
+        }
+        
+        foreach ($this->chains as $block) {
+            $key = 0;
+            $matched = []; 
+            
+            foreach ($block as $chain) {
+                
+                if (preg_match('/^\(.*\)$/', $chain) && preg_match('/^' . $chain . '$/', $eventChain[$key])) {
+                    $matched[] = $eventChain[$key];
+                    $key++;
+                } elseif (mb_strtolower($eventChain[$key], 'UTF-8') === mb_strtolower($chain, 'UTF-8')) {
+                    $key++;
+                } else {
+                    break;
+                }
+                
+                if($key == count($eventChain)) {
+                    $this->matched = $matched;
+                    return implode('/', $block);
+                }
+            }
+        }
+
+        return $event;
+    }
+
+    /**
+     * Determine and set event expressions
+     * @param string $event
+     * @return string
+     */
+    private function setExpressions($event)
+    {
+        $eventChain = explode('/', $event);
+
+        $containsExpression = false;
+
+        foreach ($eventChain as $chainIndex => $chain) {
+            if (preg_match('/^\(.*\)$/', $chain)) {
+                $containsExpression = true;
+            }
+        }
+
+        if ($containsExpression) {
+            $this->chains[] = $eventChain;
+        }
+
+        return $event;
     }
 
     /**
@@ -35,11 +118,12 @@ class Event
      */
     public function subscribe($event, $classMethod)
     {
-        $event = mb_strtolower($event, 'UTF-8');
-
         if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
+            $event = $this->setExpressions($event);
         }
+
+        $event = mb_strtolower($event, 'UTF-8');
 
         $trace = debug_backtrace();
 
@@ -87,11 +171,12 @@ class Event
      */
     public function fire($event, $arguments = array())
     {
-        $event = mb_strtolower($event, 'UTF-8');
-
         if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
+            $event = $this->proceedExpressions($event);
         }
+
+        $event = mb_strtolower($event, 'UTF-8');
 
         if (!is_array($arguments)) {
             $arguments = array($arguments);
@@ -125,5 +210,13 @@ class Event
         $event = mb_strtolower($event, 'UTF-8');
 
         return App::Container()->get('fired:' . $event)->result === 'yes';
+    }
+    
+    /**
+     * Retrive matched array
+     * @return array
+     */
+    public function getMatched() {
+        return $this->matched;
     }
 }
