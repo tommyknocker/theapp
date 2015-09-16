@@ -76,7 +76,7 @@ class Event
 
             $this->eventEmitter->on($event, array(new $initMethod['class'], $classMethod));
         } catch (Exception $e) {
-            App::Log()->logError('Cannot register method ' . $classMethod . ' to event ' . $event, $e->getMessage());
+            App::Log()->addError('Cannot register method {method} to event {event}: {message}', ['method' => $classMethod, 'event' => $event, 'message' => $e->getMessage()]);
         }
     }
 
