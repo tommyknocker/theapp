@@ -53,7 +53,6 @@ class Event
         }
 
         try {
-
             if (!$initFound) {
                 throw new Exception('Registering events only allowed in handler\'s static init() method');
             }
