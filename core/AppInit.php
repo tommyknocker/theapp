@@ -6,9 +6,10 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace App\Core;
-use App,    
+
+use App,
     Monolog\Formatter\LineFormatter,
-    Monolog\ErrorHandler,  
+    Monolog\ErrorHandler,
     Monolog\Handler\StreamHandler,
     Monolog\Processor\PsrLogMessageProcessor,
     Monolog\Logger;
@@ -17,7 +18,7 @@ require_once 'App.class.php';
 require_once 'Autoload.class.php';
 
 // composer support
-if(file_exists(DIR_ROOT . 'vendor/autoload.php')) {
+if (file_exists(DIR_ROOT . 'vendor/autoload.php')) {
     require_once DIR_ROOT . 'vendor/autoload.php';
 }
 

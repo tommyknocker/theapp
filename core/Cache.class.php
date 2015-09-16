@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace App\Core;
+
 use App;
 
 class Cache

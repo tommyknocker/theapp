@@ -6,10 +6,10 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace App\Core;
-use App, 
-    Exception, 
-    ReflectionMethod, 
-    ReflectionClass, 
+
+use App,
+    Exception,
+    ReflectionClass,
     Sabre\Event\EventEmitter;
 
 class Event
@@ -20,12 +20,12 @@ class Event
      * @var EventEmitter
      */
     private $eventEmitter = null;
-    
+
     public function __construct()
     {
         $this->eventEmitter = new EventEmitter();
     }
-    
+
     /**
      * Subscribe class method to particular event
      * Event subscription is only allowed in handler's init() function
@@ -36,11 +36,11 @@ class Event
     public function subscribe($event, $classMethod)
     {
         $event = mb_strtolower($event, 'UTF-8');
-        
-        if(strpos($event, '/') !== false) {
+
+        if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
         }
-        
+
         $trace = debug_backtrace();
 
         $initFound = false;
@@ -73,9 +73,8 @@ class Event
             if ($handlerReflectionMethod->isPrivate()) {
                 throw new Exception('Method must be public');
             }
-            
+
             $this->eventEmitter->on($event, array(new $initMethod['class'], $classMethod));
-                        
         } catch (Exception $e) {
             App::Log()->logError('Cannot register method ' . $classMethod . ' to event ' . $event, $e->getMessage());
         }
@@ -90,27 +89,27 @@ class Event
     public function fire($event, $arguments = array())
     {
         $event = mb_strtolower($event, 'UTF-8');
-        
-        if(strpos($event, '/') !== false) {
+
+        if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
-        }        
-                
+        }
+
         if (!is_array($arguments)) {
             $arguments = array($arguments);
         }
 
         $isFired = $this->eventEmitter->emit($event, $arguments);
-        
-        if($isFired) {
+
+        if ($isFired) {
             App::Container()->set('fired:' . $event, 'yes');
         }
-        
+
         if (strpos($event, 'cli:') !== false || strpos($event, 'web:') !== false) {
             $allEvent = str_replace(array('cli:', 'web:'), 'all:', $event);
             $isFired = $this->eventEmitter->emit($allEvent, $arguments);
 
             // set web:|cli: and all: event state to fired
-            if($isFired) { 
+            if ($isFired) {
                 App::Container()->set('fired:' . $event, 'yes');
                 App::Container()->set('fired:' . $allEvent, 'yes');
             }
@@ -125,7 +124,7 @@ class Event
     public function isFired($event)
     {
         $event = mb_strtolower($event, 'UTF-8');
-        
+
         return App::Container()->get('fired:' . $event)->result === 'yes';
     }
 }

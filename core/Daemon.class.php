@@ -5,7 +5,8 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  */
 namespace App\Core;
-use \App;
+use App,
+    Exception;
 
 class Daemon
 {
@@ -50,12 +51,12 @@ class Daemon
     {
 
         if (!$this->current) {
-            throw new \Exception('Try to select daemon first');
+            throw new Exception('Try to select daemon first');
         }
 
 
         if (intval($time) == 0 || intval($time) < 0) {
-            throw new \Exception('Incorrect delay value');
+            throw new Exception('Incorrect delay value');
         }
 
         $this->daemons[$this->current]['delay'] = $time;
@@ -68,14 +69,12 @@ class Daemon
      */
     public function setCallback($callback)
     {
-
         if (!$this->current) {
-            throw new \Exception('Try to select daemon first');
+            throw new Exception('Try to select daemon first');
         }
 
-
         if (!is_callable($callback)) {
-            throw new \Exception('Daemon callback is not callable');
+            throw new Exception('Daemon callback is not callable');
         }
 
         $this->daemons[$this->current]['callback'] = $callback;
@@ -86,16 +85,15 @@ class Daemon
      */
     private function runProcess()
     {
-
         while (true) {
             try {
                 $willNotSleep = call_user_func_array($this->daemons[$this->current]['callback'], [$message]);
-            } catch (\Exception $e) {
-                \App::Log()->tag('daemon' . $this->current)->LogError('Got \Exception from callback of ' . $this->current, $e->getMessage());
+            } catch (Exception $e) {
+                App::Log()->addError('Got Exception from callback of {daemon}: {message}', ['daemon' => $this->current, 'message' => $e->getMessage()]);
             }
 
             if (!$willNotSleep) {
-                \App::Timer()->msleep($this->daemons[$this->current]['delay']);
+                App::Timer()->msleep($this->daemons[$this->current]['delay']);
             }
         }
     }

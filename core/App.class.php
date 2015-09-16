@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The App. Factory. Chainable
  *
@@ -20,8 +21,7 @@
  * @method \core\Tr \core\Tr
  * 
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
- **/
-
+ * */
 class App
 {
 
@@ -58,8 +58,8 @@ class App
     {
         
     }
-    
-    /** 
+
+    /**
      * Protect from unserializing
      */
     private function __wakeup()
@@ -135,7 +135,7 @@ class App
 
         switch ($param) {
             case 'instance':
-                if (is_object($value)) {                                    
+                if (is_object($value)) {
                     $app->objects[$app->currentObject]['instance'] = $value;
                 } else {
                     throw new Exception("Couldn't set instance of the class " . $app->currentObject);

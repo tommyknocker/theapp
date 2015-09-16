@@ -9,7 +9,6 @@ namespace App\Core;
 
 class Get
 {
-
     /**
      * Get variable from enviroment superglobal
      * @param string $variable
