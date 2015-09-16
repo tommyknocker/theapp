@@ -12,6 +12,10 @@
  * */
 namespace App\Core;
 
+use mysqli,
+    mysqli_stmt,
+    Exception;
+
 class MysqliDb
 {
 
