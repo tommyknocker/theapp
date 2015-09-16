@@ -8,7 +8,7 @@
 /**
  * Current version of The App
  */
-define('APP_VERSION', '0.0.11');
+define('APP_VERSION', '0.2.0');
 
 /**
  * Document root
