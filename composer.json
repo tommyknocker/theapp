@@ -1,0 +1,21 @@
+{
+    "name": "tommyknocker/theapp.pro",
+    "description": "Tiny, fast and powerful framework",
+    "version": "0.0.11",
+    "type": "framework",
+    "homepage": "https://theapp.pro",
+    "license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "Vasiliy 'Tommyknocker' Ulin",
+            "email": "ulin.vasiliy@gmail.com",
+            "homepage": "http://theapp.pro",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "monolog/monolog": "^1.17",
+        "sabre/event": "^2.0"
+    }
+}

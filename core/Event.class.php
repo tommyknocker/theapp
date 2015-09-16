@@ -1,18 +1,30 @@
 <?php
 /**
- * Events class.
+ * Event handling class.
  *
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace core;
-use App, Exception, ReflectionMethod, ReflectionClass;
+use App, Exception, ReflectionMethod, ReflectionClass, Sabre\Event\EventEmitter;
 
 class Event
 {
 
     /**
+     * Sabre EventEmitter object
+     * @var EventEmitter
+     */
+    private $eventEmitter = null;
+    
+    public function __construct()
+    {
+        $this->eventEmitter = new EventEmitter();
+    }
+    
+    /**
      * Subscribe class method to particular event
+     * Event subscription is only allowed in handler's init() function
      * 
      * @param string $event Event to register for
      * @param string $classMethod
@@ -57,9 +69,9 @@ class Event
             if ($handlerReflectionMethod->isPrivate()) {
                 throw new Exception('Method must be public');
             }
-
-            App::Container()->add('event:' . $event, array($initMethod['class'], $classMethod));
             
+            $this->eventEmitter->on($event, array(new $initMethod['class'], $classMethod));
+                        
         } catch (Exception $e) {
             App::Log()->logError('Cannot register method ' . $classMethod . ' to event ' . $event, $e->getMessage());
         }
@@ -69,42 +81,35 @@ class Event
      * Fire an event
      * 
      * @param string $event
+     * @param array $arguments
      */
-    public function fire($event, $args = array())
+    public function fire($event, $arguments = array())
     {
         $event = mb_strtolower($event, 'UTF-8');
         
         if(strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
         }        
-        
-        $methods = App::Container()->get('event:' . $event)->result;        
-        
-        if (!is_array($methods)) {
-            $methods = array();
+                
+        if (!is_array($arguments)) {
+            $arguments = array($arguments);
         }
 
-        if (!is_array($args)) {
-            $args = array('arg' => $args);
+        $isFired = $this->eventEmitter->emit($event, $arguments);
+        
+        if($isFired) {
+            App::Container()->set('fired:' . $event, 'yes');
         }
-
+        
         if (strpos($event, 'cli:') !== false || strpos($event, 'web:') !== false) {
-            $allMethods = App::Container()->get('event:' . str_replace(array('cli:', 'web:'), 'all:', $event))->result;
+            $allEvent = str_replace(array('cli:', 'web:'), 'all:', $event);
+            $isFired = $this->eventEmitter->emit($allEvent, $arguments);
 
-            if ($allMethods) {
-                $methods = array_merge($methods, $allMethods);
+            // set web:|cli: and all: event state to fired
+            if($isFired) { 
+                App::Container()->set('fired:' . $event, 'yes');
+                App::Container()->set('fired:' . $allEvent, 'yes');
             }
-        }
-
-        if (!$methods) {
-            return;
-        }
-
-        App::Container()->set('fired:' . $event, 'yes');
-
-        foreach ($methods as $method) {
-            $reflectionMethod = new ReflectionMethod($method[0], $method[1]);
-            $reflectionMethod->invokeArgs(new $method[0], $args);
         }
     }
 

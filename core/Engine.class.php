@@ -150,7 +150,6 @@ class Engine
      */
     private function initHandlers()
     {
-
         if (!is_readable(DIR_HANDLERS)) {
             throw new Exception('Handlers directory is not readable');
         }
@@ -164,7 +163,7 @@ class Engine
         foreach ($files as $file) {
 
             if (!is_readable($file)) {
-                App::Log()->logWarn('Cannot read handler', $file);
+                App::Log()->addWarning('Cannot read handler {file}', $file);
                 continue;
             }
 
@@ -174,10 +173,8 @@ class Engine
             $filePart = explode('.', $filename);
             $handler = array_shift($filePart);
 
-            try {
-                                
+            try {                                
                 $handlerReflection = new ReflectionClass('\\App\\Handlers\\' . $handler);
-                                
 
                 if (!$handlerReflection->hasMethod('init')) {
                     throw new Exception('No init method found');
@@ -194,8 +191,7 @@ class Engine
                 unset($handlerReflection);
                 unset($handlerReflectionMethod);
             } catch (Exception $ex) {
-                
-                App::Log()->logWarn('Cannot init handler ' . $handler, $ex->getMessage());
+                App::Log()->addWarning('Cannot init handler {handler}: {exception}', ['handler' => $handler, 'exception' => $ex->getMessage()]);
             }
         }
     }

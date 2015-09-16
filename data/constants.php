@@ -8,12 +8,7 @@
 /**
  * Current version of The App
  */
-define('APP_VERSION', '0.0.10');
-
-/**
- * Debug mode
- */
-define('DEBUG', true);
+define('APP_VERSION', '0.0.11');
 
 /**
  * Document root
@@ -30,12 +25,10 @@ define('DIR_DATA', DIR_ROOT . 'data' . DS);
  */
 define('DIR_DATA_PID', DIR_DATA . 'pids' . DS);
 
-
 /**
  * Handlers directory
  */
 define('DIR_HANDLERS', DIR_ROOT . 'handlers' . DS);
-
 
 /**
  * Templates directory
@@ -43,25 +36,7 @@ define('DIR_HANDLERS', DIR_ROOT . 'handlers' . DS);
 define('DIR_TEMPLATES', DIR_ROOT . 'templates' . DS);
 
 /**
- * Errors constants
- */
-define('ERR_OFF', 0);
-define('ERR_EMERG', 1);
-define('ERR_ALERT', 2);
-define('ERR_CRIT', 3);
-define('ERR_ERR', 4);
-define('ERR_WARN', 5);
-define('ERR_NOTICE', 6);
-define('ERR_DEBUG', 7);
-define('ERR_NO_ARGUMENTS', 'No arguments');
-
-/**
  * Engine modes
  */
 define('ENGINE_MODE_WEB', 'web');
 define('ENGINE_MODE_CLI', 'cli');
-
-/**
- * Log
- */
-define('LOG_DEFAULT_TAG', 'Debug');

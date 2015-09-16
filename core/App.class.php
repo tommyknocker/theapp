@@ -6,7 +6,6 @@
  * 
  * IDE method helpers
  * @method \core\Autoload \core\Autoload
- * @method \core\Cache \core\Cache
  * @method \core\Config \core\Config 
  * @method \core\Container \core\Container
  * @method \core\Cron  \core\Cron
@@ -15,7 +14,7 @@
  * @method \core\Engine \core\Engine
  * @method \core\Event \core\Event
  * @method \core\Get \core\Get
- * @method \core\Log \core\Log
+ * @method \core\Log \Monolog\Logger
  * @method \core\Timer \core\Timer
  * @method \core\Tpl \core\Tpl
  * @method \core\Tr \core\Tr
@@ -93,7 +92,7 @@ class App
     /**
      * Get value from class
      * @param string  $param
-     * @throws \Exception
+     * @throws Exception
      * @return mixed
      */
     public function __get($param)
@@ -103,8 +102,9 @@ class App
 
         $currentObj = &$app->objects[$app->currentObject]['instance'];
 
-        if (!is_object($currentObj))
-            throw new \Exception("Class " . $app->currentObject . " wasn't initialized");
+        if (!is_object($currentObj)) {
+            throw new Exception("Class " . $app->currentObject . " wasn't initialized");
+        }
 
         switch ($param) {
             case 'instance':
@@ -129,15 +129,17 @@ class App
 
         $currentObj = &$app->objects[$app->currentObject]['instance'];
 
-        if (!is_object($currentObj))
+        if (!is_object($currentObj)) {
             throw new Exception("Class " . $app->currentObject . " wasn't initialized");
+        }
 
         switch ($param) {
             case 'instance':
-                if (is_object($value))
+                if (is_object($value)) {                                    
                     $app->objects[$app->currentObject]['instance'] = $value;
-                else
+                } else {
                     throw new Exception("Couldn't set instance of the class " . $app->currentObject);
+                }
                 break;
             default:
                 $currentObj->$param = $value;
@@ -148,7 +150,7 @@ class App
      * Call class method
      * @param string $method
      * @param array $params
-     * @throws \Exception
+     * @throws Exception
      */
     public function __call($method, $params)
     {
@@ -200,15 +202,15 @@ class App
         } catch (Exception $e) {
 
             if (!class_exists($name)) {
-                throw new \Exception('Class ' . $name . ' does not exist');
+                throw new Exception('Class ' . $name . ' does not exist');
             } else {
-                App::Log()->logDebug('App trying to load not a core namespace class: ' . $name);
+                App::Log()->addDebug('App trying to load not a core namespace class: ' . $name);
                 $obj = new ReflectionClass($name);
             }
         }
 
         if (!$obj->isInstantiable()) {
-            throw new \Exception('Cannot create object from class: ' . $name);
+            throw new Exception('Cannot create object from class: ' . $name);
         }
 
         $app->objects[$name] = [];
