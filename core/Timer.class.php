@@ -4,7 +4,7 @@
  *
  * @author Tommyknocker <tommyknocker@theapp.pro>
  */
-namespace core;
+namespace App\Core;
 
 class Timer
 {

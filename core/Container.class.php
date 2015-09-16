@@ -5,7 +5,7 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-namespace core;
+namespace App\Core;
 
 class Container
 {

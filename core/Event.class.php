@@ -5,8 +5,12 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-namespace core;
-use App, Exception, ReflectionMethod, ReflectionClass, Sabre\Event\EventEmitter;
+namespace App\Core;
+use App, 
+    Exception, 
+    ReflectionMethod, 
+    ReflectionClass, 
+    Sabre\Event\EventEmitter;
 
 class Event
 {

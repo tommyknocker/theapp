@@ -9,7 +9,7 @@
  * @license   http://opensource.org/licenses/gpl-3.0.html GNU Public License
  * @version   2.1
  * */
-namespace core;
+namespace App\Core;
 
 class MysqliDb
 {

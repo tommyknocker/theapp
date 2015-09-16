@@ -5,7 +5,7 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-namespace core;
+namespace App\Core;
 use App,    
     Monolog\Formatter\LineFormatter,
     Monolog\ErrorHandler,  
@@ -22,7 +22,7 @@ if(file_exists(DIR_ROOT . 'vendor/autoload.php')) {
 }
 
 // register our own autoloader
-App::Autoload()->addNameSpace('core')->addPath(DIR_ROOT . 'core')->addExt('.class.php')->register()
+App::Autoload()->addNamespace('App\\Core')->addPath(DIR_ROOT . 'core')->addExt('.class.php')->register()
     ->addPath(DIR_ROOT . 'abstract')->addExt('.class.php')->register()
     ->addPath(DIR_ROOT . 'interfaces')->addExt('.interface.php')->register()
     ->addPath(DIR_ROOT . 'traits')->addExt('.trait.php')->register()

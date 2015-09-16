@@ -198,13 +198,12 @@ class App
 
 
         try {
-            $obj = new ReflectionClass('\\core\\' . $name);
+            $obj = new ReflectionClass('\\App\\Core\\' . $name);
         } catch (Exception $e) {
 
             if (!class_exists($name)) {
                 throw new Exception('Class ' . $name . ' does not exist');
             } else {
-                App::Log()->addDebug('App trying to load not a core namespace class: ' . $name);
                 $obj = new ReflectionClass($name);
             }
         }

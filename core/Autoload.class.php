@@ -5,7 +5,7 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-namespace core;
+namespace App\Core;
 use Exception;
 
 class Autoload
@@ -21,7 +21,7 @@ class Autoload
      * Add namespace
      * @param string $namespace
      */
-    public function addNameSpace($namespace)
+    public function addNamespace($namespace)
     {
         $this->params['namespace'] = $namespace;
     }
@@ -72,7 +72,7 @@ class Autoload
         $code = [];
 
         if (array_key_exists('namespace', $this->params)) {
-            $code[] = '$ns = "\\\\' . $this->params['namespace'] . '\\\\"';
+            $code[] = '$ns = "\\\\' . str_replace('\\', '\\\\', $this->params['namespace']) . '\\\\"';
         } else {
             $code[] = '$ns = "\\\\"';
         }
