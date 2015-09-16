@@ -14,7 +14,6 @@ use App,
 
 class Event
 {
-
     /**
      * Sabre EventEmitter object
      * @var EventEmitter
