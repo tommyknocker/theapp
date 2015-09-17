@@ -6,19 +6,19 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * 
  * IDE method helpers
- * @method \core\Autoload \core\Autoload
- * @method \core\Config \core\Config 
- * @method \core\Container \core\Container
- * @method \core\Cron  \core\Cron
- * @method \core\Daemon \core\Daemon
- * @method \core\DB \core\MysqliDb
- * @method \core\Engine \core\Engine
- * @method \core\Event \core\Event
- * @method \core\Get \core\Get
- * @method \core\Log \Monolog\Logger
- * @method \core\Timer \core\Timer
- * @method \core\Tpl \core\Tpl
- * @method \core\Tr \core\Tr
+ * @method \App\Core\Autoload \App\Core\Autoload
+ * @method \App\Core\Config \App\Core\Config 
+ * @method \App\Core\Container \App\Core\Container
+ * @method \App\Core\Cron  \App\Core\Cron
+ * @method \App\Core\Daemon \App\Core\Daemon
+ * @method \App\Core\DB \App\Core\MysqliDb
+ * @method \App\Core\Engine \App\Core\Engine
+ * @method \App\Core\Event \App\Core\Event
+ * @method \App\Core\Get \App\Core\Get
+ * @method \App\Core\Log \Monolog\Logger
+ * @method \App\Core\Timer \App\Core\Timer
+ * @method \App\Core\Tpl \App\Core\Tpl
+ * @method \App\Core\Tr \App\Core\Tr
  * 
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  * */
