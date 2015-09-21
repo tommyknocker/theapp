@@ -10,5 +10,8 @@
         "name": "theapp",
         "login": "theapp",
         "password": "theapp"
+    },
+    "language": {
+        "default": "en"
     }
 }
