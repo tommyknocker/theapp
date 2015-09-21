@@ -16,6 +16,7 @@ use App,
 
 require_once 'App.class.php';
 require_once 'Autoload.class.php';
+require_once DIR_DATA . 'shortcuts.php';
 
 // composer support
 if (file_exists(DIR_ROOT . 'vendor/autoload.php')) {
@@ -42,4 +43,10 @@ ErrorHandler::register($log);
 App::ld('Log', $log);
 
 App::Config('config.json.php');
+
+$defaultLanguage = App::Config()->language_default;
+if($defaultLanguage) {
+    App::I18n()->setDefaultLanguage($defaultLanguage);
+}
+
 App::Engine()->start();
