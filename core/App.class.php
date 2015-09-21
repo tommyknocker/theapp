@@ -16,6 +16,7 @@
  * @method \App\Core\Event \App\Core\Event
  * @method \App\Core\Format \App\Core\Format
  * @method \App\Core\Get \App\Core\Get
+ * @method \App\Core\Handler \App\Core\Handler
  * @method \App\Core\Log \Monolog\Logger
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
@@ -175,8 +176,15 @@ class App
         }
 
         $currentObject = $app->currentObject;
-        $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
-        $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+        if($app->objects[$app->currentObject]['callable'] && !method_exists($currentObj, $method)) {
+            $objectReflectionMethod = new ReflectionMethod($currentObj, '__call');
+            $params = array_merge([$method], [$params]); 
+            $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+        } else { 
+            $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
+            $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+        }
+        
         $app->currentObject = $currentObject;
 
         return $app;
@@ -195,11 +203,10 @@ class App
 
         $app->currentObject = $name;
 
-        if (array_key_exists($name, $app->objects)) {
+        if (isset($app->objects[$name]) && $app->objects[$name]['singleton']) {
             return $app;
         }
-
-
+        
         try {
             $obj = new ReflectionClass('\\App\\Core\\' . $name);
         } catch (Exception $e) {
@@ -221,6 +228,7 @@ class App
         $app->objects[$name]['instance'] = $obj->getConstructor() ? $obj->newInstanceArgs($args) : $obj->newInstance();
         $app->currentObject = $currentObject;
         $traits = $obj->getTraitNames();
+        $app->objects[$name]['singleton'] = is_array($traits) && in_array('TNoSingleton', $traits, true) ? false : true;
         $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
         $app->objects[$name]['result'] = null;
 
