@@ -22,7 +22,7 @@ class Config
     public function __construct($configFile)
     {
         $this->configFile = $configFile;
-        $this->read();
+        $this->load();
     }
 
     /**
@@ -98,33 +98,19 @@ class Config
      * @throws Exception
      * @return mixed
      */
-    public function read()
-    {
-        if (!file_exists($this->configFile) || !is_readable($this->configFile)) {
-            throw new Exception('Config file ' . $this->configFile . ' does not exist or not readable');
-        }
-
-        $data = json_decode(file_get_contents($this->configFile));
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Bad config file. Error code: ' . json_last_error());
-        }
-
+    public function load()
+    {        
+        $data = App::JSON()->read($this->configFile)->result;
         App::Container()->config = $data;
     }
 
     /**
-     * Write config to file
+     * Save configuration file
      * @return mixed Number of bytes written of false
      */
-    public function write()
+    public function save()
     {
-        if (!is_writable($this->configFile)) {
-            throw new Exception('Config file ' . $configFile . ' is not writable');
-        }
-
         $config = App::Container()->config;
-
-        return file_put_contents($this->configFile, json_encode($config, JSON_PRETTY_PRINT));
+        return App::JSON()->write($this->configFile, $config);
     }
 }

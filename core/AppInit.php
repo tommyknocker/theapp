@@ -30,8 +30,6 @@ App::Autoload()->addNamespace('App\\Core')->addPath(DIR_ROOT . 'core')->addExt('
     ->addPath(DIR_ROOT . 'models')->addExt('.model.php')->register()
     ->addPath(DIR_ROOT . 'classes')->addExt('.class.php')->register();
 
-App::Config(DIR_DATA . 'config.json.php');
-
 // Configure main logger
 $output = "[%datetime%] %channel%.%level_name%: %message% %context%\n";
 $formatter = new LineFormatter($output, null, false, true);
@@ -43,4 +41,5 @@ $log->pushProcessor(new PsrLogMessageProcessor());
 ErrorHandler::register($log);
 App::ld('Log', $log);
 
+App::Config('config.json.php');
 App::Engine()->start();

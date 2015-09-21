@@ -1,7 +1,7 @@
 {
     "__configuration": "read protected<?php die();?>",
     "daemon": {
-        "delay" : 100
+        "delay": 100
     },
     "db": {
         "enabled": true,
@@ -9,6 +9,6 @@
         "port": 3306,
         "name": "theapp",
         "login": "theapp",
-        "password": "theapp"        
-    }   
+        "password": "theapp"
+    }
 }
