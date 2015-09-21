@@ -19,7 +19,7 @@
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
  * @method \App\Core\Tpl \App\Core\Tpl
- * @method \App\Core\I18n \App\Core\I19n
+ * @method \App\Core\I18n \App\Core\I18n
  * 
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  * */
