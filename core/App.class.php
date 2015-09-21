@@ -83,11 +83,12 @@ class App
     }
 
     /**
-     * Echo the App version
+     * Return the App version
+     * @return string
      */
     public function __toString()
     {
-        echo 'The App. Version ' . APP_VERSION;
+        return 'The App. Version ' . APP_VERSION;
     }
 
     /**
