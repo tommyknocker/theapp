@@ -28,8 +28,8 @@ class I18n
         'no_NO.UTF-8', 'nn_NO.UTF-8', 'pl.UTF-8', 'pt_PT.UTF-8', 'pt_BR.UTF-8', 'ro_RO.UTF-8', 'ru_RU.UTF-8',
         'mi_NZ.UTF-8', 'sr_CS.UTF-8', 'sk_SK.UTF-8', 'sl_SI.UTF-8', 'so_SO.UTF-8', 'es_ES.UTF-8', 'sv_SE.UTF-8',
         'tl.UTF-8', 'ta_IN.UTF-8', 'th_TH.UTF-8', 'mi_NZ.UTF-8', 'tr_TR.UTF-8', 'uk_UA.UTF-8', 'vi_VN.UTF-8'
-    ];    
-    
+    ];
+
     /**
      * The default language code
      * @var string 
