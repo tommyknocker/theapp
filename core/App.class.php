@@ -14,6 +14,7 @@
  * @method \App\Core\DB \App\Core\MysqliDb
  * @method \App\Core\Engine \App\Core\Engine
  * @method \App\Core\Event \App\Core\Event
+ * @method \App\Core\Format \App\Core\Format
  * @method \App\Core\Get \App\Core\Get
  * @method \App\Core\Log \Monolog\Logger
  * @method \App\Core\JSON \App\Core\JSON
