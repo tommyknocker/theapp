@@ -75,7 +75,7 @@ class Event
                     break;
                 }
                 
-                if($key == count($eventChain)) {
+                if($key == count($block) && $key == count($eventChain)) {
                     $this->matched = $matched;
                     return implode('/', $block);
                 }
