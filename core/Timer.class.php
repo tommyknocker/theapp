@@ -3,6 +3,7 @@
  * Time functions
  *
  * @author Tommyknocker <tommyknocker@theapp.pro>
+ * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace App\Core;
 
@@ -12,7 +13,7 @@ class Timer
     private $time = null;
 
     /**
-     * Старт таймера
+     * Start timer
      */
     public function start()
     {
@@ -20,7 +21,7 @@ class Timer
     }
 
     /**
-     * Получение разницы в микросекундах
+     * Get difference in microseconds
      * @return int
      */
     public function timeMicro()
@@ -29,7 +30,7 @@ class Timer
     }
 
     /**
-     * Получение разницы в миллисекундах
+     * Get difference in milliseconds
      * @return int
      */
     public function timeMs()
@@ -38,7 +39,7 @@ class Timer
     }
 
     /**
-     * Получение разницы в секундах
+     * Get deffierence in seconds
      * @return int
      */
     public function timeSec()
@@ -47,13 +48,12 @@ class Timer
     }
 
     /**
-     * Спать указанное число миллисекунд
+     * Sleep given amount of milliseconds (1ms = 1/1000th of second)
      * 
-     * @param integer $milliseconds Количество миллисекунд (1/1000-я секунды)
+     * @param integer $milliseconds
      */
-    public function msleep($milliseconds = 1000)
+    public function msleep($milliseconds)
     {
-        $milliseconds = (int) $milliseconds ? (int) $milliseconds * 1000 : 1000000;
-        usleep($milliseconds);
+        usleep((int) $milliseconds * 1000);
     }
 }
