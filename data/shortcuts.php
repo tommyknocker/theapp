@@ -6,7 +6,6 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-use App\Core;
 
 /**
  * This method is a shortcut to <code>App::Tr()-&gt;get(...)->result;</code>.
