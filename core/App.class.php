@@ -261,6 +261,7 @@ class App
         $app->objects[$name] = [];
         $app->objects[$name]['instance'] = $object;
         $traits = $reflection->getTraitNames();
+        $app->objects[$name]['singleton'] = is_array($traits) && in_array('TNoSingleton', $traits, true) ? false : true;
         $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
         $app->objects[$name]['result'] = null;
 
