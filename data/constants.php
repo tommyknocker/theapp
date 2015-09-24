@@ -31,6 +31,11 @@ define('DIR_DATA_PID', DIR_DATA . 'pids' . DS);
 define('DIR_HANDLERS', DIR_ROOT . 'handlers' . DS);
 
 /**
+ * Public directory
+ */
+define('DIR_PUBLIC', DIR_ROOT . 'public' . DS);
+
+/**
  * Templates directory
  */
 define('DIR_TEMPLATES', DIR_ROOT . 'templates' . DS);
