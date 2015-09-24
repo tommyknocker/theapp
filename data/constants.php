@@ -31,11 +31,6 @@ define('DIR_DATA_PID', DIR_DATA . 'pids' . DS);
 define('DIR_HANDLERS', DIR_ROOT . 'handlers' . DS);
 
 /**
- * Public directory
- */
-define('DIR_PUBLIC', DIR_ROOT . 'public' . DS);
-
-/**
  * Templates directory
  */
 define('DIR_TEMPLATES', DIR_ROOT . 'templates' . DS);
@@ -45,3 +40,10 @@ define('DIR_TEMPLATES', DIR_ROOT . 'templates' . DS);
  */
 define('ENGINE_MODE_WEB', 'web');
 define('ENGINE_MODE_CLI', 'cli');
+
+
+/**
+ * Assets namespaces
+ */
+define('ASSETS_CSS_NAMESPACE', 'e36fcfb8-6ced-4f4f-a033-a034a526d002');
+define('ASSETS_JAVASCRIPT_NAMESPACE', '1086e336-e340-4512-a1f9-d06f66212829');

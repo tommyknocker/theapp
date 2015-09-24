@@ -13,5 +13,21 @@
     },
     "language": {
         "default": "en"
+    },
+    "project": {
+        "title": "Project title",
+        "version": "1.0.0",
+        "vendor": {
+            "link": "https://theapp.pro",
+            "title": "The App Framework"
+        }
+    },
+    "templates": {
+        "assets": {
+            "minify": {
+                "css": true,
+                "javascript": true
+            }
+        }
     }
 }

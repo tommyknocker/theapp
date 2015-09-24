@@ -23,13 +23,13 @@ class JSON
         $filePath = DIR_DATA . $fileName;
 
         if (!file_exists($filePath) || !is_readable($filePath)) {
-            throw new Exception('File ' . $filePath . ' does not exist or not readable');
+            throw new \Exception('File ' . $filePath . ' does not exist or not readable');
         }
 
         $data = json_decode(file_get_contents($filePath));
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Bad json file. Error code: ' . json_last_error());
+            throw new \Exception('Bad json file. Error code: ' . json_last_error());
         }
 
         return $data;
@@ -48,7 +48,7 @@ class JSON
         $filePath = DIR_DATA . $fileName;
 
         if (!is_writable($filePath)) {
-            throw new Exception('Provied path ' . $filePath . ' is not writable');
+            throw new \Exception('Provied path ' . $filePath . ' is not writable');
         }
 
         return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT));

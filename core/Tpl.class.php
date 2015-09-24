@@ -7,10 +7,58 @@
  */
 namespace App\Core;
 
-use Exception;
+use Exception,
+    App,
+    Assetic\AssetManager,
+    Assetic\AssetWriter,
+    Assetic\Asset\AssetCollection,
+    Assetic\Asset\AssetCache,
+    Assetic\Asset\FileAsset,
+    Assetic\Asset\HttpAsset,
+    Assetic\Asset\StringAsset,
+    Assetic\Cache\FilesystemCache,
+    Assetic\Filter\CssImportFilter,
+    Assetic\Filter\JSMinFilter;
 
 class Tpl
 {
+
+    /**
+     * Asset collesionts array
+     * @var array
+     */
+    private $assetCollections = [
+        'css' => [
+            'combined' => [],
+            'single' => [],
+            'bypass' => []
+        ],
+        'javascript' => [
+            'combined' => [],
+            'single' => [],
+            'bypass' => []
+        ]
+    ];
+
+    /**
+     * Configuration
+     * @var object
+     */
+    private $config = null;
+    
+    /**
+     * Debug mode
+     * @var bool
+     */
+    private $debug = false;
+
+    public function __construct()
+    {
+        $this->config = App::Config()->templates;
+
+        $this->assetCollections['javascript']['combined'] = new AssetCollection();
+        $this->assetCollections['css']['combined'] = new AssetCollection();
+    }
 
     /**
      * Array of <head> elements
@@ -20,20 +68,95 @@ class Tpl
 
     /**
      * Add css code to head
-     * @param string $js
+     * @param string $css
+     * @param array $options
      */
-    public function addCSS($js)
+    public function addCSS($css, $options = [])
     {
-        $this->head[] = '<style type="text/css">' . $js . '</style>';
+        $options = array_merge(['single' => false, 'filter' => true], $options);
+        
+        $asset = new StringAsset($css);        
+        $asset->setTargetPath($this->getAssetName($css, ASSETS_CSS_NAMESPACE));
+
+        if ($options['filter'] && $this->config->assets->minify->css) {
+            $asset->ensureFilter(new CssImportFilter());
+        }
+
+        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/css'));
+
+        if ($options['single']) {
+            $this->assetCollections['css']['single'][] = $asset;
+        } else {
+            $this->assetCollections['css']['combined']->add($asset);
+        }                
     }
 
     /**
      * Add js code to head
      * @param string $js
+     * @param array $options
      */
-    public function addJS($js)
+    public function addJS($js, $options = [])
     {
-        $this->head[] = '<script type="text/javascript">' . $js . '</script>';
+        $options = array_merge(['single' => false, 'filter' => true], $options);
+        
+        $asset = new StringAsset($js);        
+        $asset->setTargetPath($this->getAssetName($css, ASSETS_JAVASCRIPT_NAMESPACE));
+
+        if ($options['filter'] && $this->config->assets->minify->javascript) {
+            $asset->ensureFilter(new JSMinFilter());
+        }
+
+        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/js'));
+
+        if ($options['single']) {
+            $this->assetCollections['javascript']['single'][] = $asset;
+        } else {
+            $this->assetCollections['javascript']['combined']->add($asset);
+        }  
+    }
+
+    /**
+     * add js var helper
+     * @param array $array
+     */
+    private function addJSHelper($array)
+    {
+        $result = "";
+
+        if (is_array($array)) {
+
+            $isNumericAndLinear = $this->arrayIsNumeric($array) && $this->arrayIsLinear($array);
+            $result .= $isNumericAndLinear ? '[' : '{';
+
+            $innerArray = array();
+
+            foreach ($array as $key => $value) {
+                $determinedValue = $this->addJSVarDetermine($value);
+                $result .= $isNumericAndLinear ? $determinedValue : $this->addJSVarDetermine($key) . ':' . (!is_array($determinedValue) ? $determinedValue : '');
+
+                if (is_array($determinedValue)) {
+                    switch ($determinedValue['type']) {
+                        case 'object':
+                            $result .= $this->addJSHelper(get_object_vars($value));
+                            break;
+                        case 'array':
+                            $result .= $this->addJSHelper($value);
+                            break;
+                    }
+                }
+
+                $result .= ',' . ($isNumericAndLinear ? '' : "\n");
+            }
+
+            $result = rtrim($result, ",\n");
+
+            $result .= $isNumericAndLinear ? ']' : '}';
+        } else {
+            $result .= $this->addJSVarDetermine($array);
+        }
+
+        return $result;
     }
 
     /**
@@ -41,10 +164,10 @@ class Tpl
      * @param string $name
      * @param mixed $variable
      */
-    public function addJsVariable($name, $variable)
+    public function addJSVariable($name, $variable)
     {
         $result = (strpos($name, '.') === false ? 'var ' : '') . $name . ' = ';
-        $result .= $this->addJsHelper($variable) . ';';
+        $result .= $this->addJSHelper($variable) . ';';
         $this->addJS($result);
     }
 
@@ -53,7 +176,7 @@ class Tpl
      * @param mixed $variable
      * @return mixed
      */
-    private function addJsVarDetermine($variable)
+    private function addJSVarDetermine($variable)
     {
         switch (gettype($variable)) {
             case 'string':
@@ -75,49 +198,6 @@ class Tpl
     }
 
     /**
-     * add js var helper
-     * @param array $array
-     */
-    private function addJsHelper($array)
-    {
-        $result = "";
-
-        if (is_array($array)) {
-
-            $isNumericAndLinear = $this->arrayIsNumeric($array) && $this->arrayIsLinear($array);
-            $result .= $isNumericAndLinear ? '[' : '{';
-
-            $innerArray = array();
-
-            foreach ($array as $key => $value) {
-                $determinedValue = $this->addJsVarDetermine($value);
-                $result .= $isNumericAndLinear ? $determinedValue : $this->addJsVarDetermine($key) . ':' . (!is_array($determinedValue) ? $determinedValue : '');
-
-                if (is_array($determinedValue)) {
-                    switch ($determinedValue['type']) {
-                        case 'object':
-                            $result .= $this->addJsHelper(get_object_vars($value));
-                            break;
-                        case 'array':
-                            $result .= $this->addJsHelper($value);
-                            break;
-                    }
-                }
-
-                $result .= ',' . ($isNumericAndLinear ? '' : "\n");
-            }
-
-            $result = rtrim($result, ",\n");
-
-            $result .= $isNumericAndLinear ? ']' : '}';
-        } else {
-            $result .= $this->addJsVarDetermine($array);
-        }
-
-        return $result;
-    }
-
-    /**
      * Add meta tag to the head
      * @param string $name
      * @param string $content
@@ -128,65 +208,187 @@ class Tpl
     }
 
     /**
-     * Return head contents
-     * @param boolean $flush
-     * @return string
-     */
-    public function head($flush = true)
-    {
-        $head = implode("\n", $this->head);
-        if ($flush) {
-            $this->head = [];
-        }
-        return $head;
-    }
-
-    /**
-     * Add javascript file to template head
-     * @param string $js
-     * @param string $name
-     */
-    public function includeJS($js, $name = "")
-    {
-        $this->head[$name ? 'js_' . $name : count($this->head)] = '<script type="text/javascript" src="' . $js . '"></script>';
-    }
-
-    /**
-     * Add CSS file to template head
-     * @param string $css
-     */
-    public function includeCSS($css, $name = "")
-    {
-        $this->head[$name ? 'css_' . $name : count($this->head)] = '<link rel="stylesheet" href="' . $css . '" />';
-    }
-    
-    /**
      * Check if array keys is numeric only
      * @param array $array
      * @return boolean
      */
-    private function arrayIsNumeric($array) {
+    private function arrayIsNumeric($array)
+    {
         foreach (array_keys($array) as $a) {
             if ($a !== (int) $a) {
                 return false;
-            } 
+            }
         }
         return true;
     }
-    
+
     /**
      * Check if array is linear
      * @param array $array
      * @return boolean
      */
-    private function arrayIsLinear($array) {
-        foreach($array as $value) {
-            if(is_array($value)) {
+    private function arrayIsLinear($array)
+    {
+        foreach ($array as $value) {
+            if (is_array($value)) {
                 return false;
             }
         }
         return true;
-    }    
+    }
+
+    /**
+     * Get asset name
+     * @param string $name
+     * @param string $namespace
+     * @return string
+     * @throws Exception
+     */
+    private function getAssetName($name, $namespace)
+    {
+        $url = hash('sha256', $name);
+
+        switch ($namespace) {
+            case ASSETS_CSS_NAMESPACE:
+                return App::UUID()->v5(ASSETS_CSS_NAMESPACE, $url)->result . '.css';
+            case ASSETS_JAVASCRIPT_NAMESPACE:
+                return App::UUID()->v5(ASSETS_JAVASCRIPT_NAMESPACE, $url)->result . '.js';
+            default:
+                throw Exception("No such asset namespace");
+        }
+    }
+
+    /**
+     * Get script tag
+     * @param string $path
+     * @param string $type
+     */
+    private function getTag($path, $type) {
+        switch($type) {
+            case 'css':
+                return '<link rel="stylesheet" type="text/css" href="' . $path . '"/>';
+            case 'javascript':
+                return '<script type="text/javascript" src="' . $path . '"></script>';
+            default:
+                throw new Exception('No such script tag');
+        }
+    }
+    
+    /**
+     * Return head contents
+     * @return string
+     */
+    public function head()
+    {
+        foreach($this->assetCollections['javascript']['bypass'] as $asset) {
+            $this->head[] = $this->getTag($asset, 'javascript');
+        }        
+        
+        foreach($this->assetCollections['css']['bypass'] as $asset) {
+            $this->head[] = $this->getTag($asset, 'css');
+        }        
+        
+        $assetManager = new AssetManager();
+
+        $nameHash = '';
+
+        foreach ($this->assetCollections['javascript']['combined'] as $asset) {
+            $nameHash .= $asset->getTargetPath();
+        }
+
+        $this->assetCollections['javascript']['combined']->setTargetPath($this->getAssetName($nameHash, ASSETS_JAVASCRIPT_NAMESPACE));
+
+        $assetManager->set('javascript', $this->assetCollections['javascript']['combined']);
+        $this->head[] = $this->getTag('/public/assets/' . $this->assetCollections['javascript']['combined']->getTargetPath(), 'javascript');
+
+        foreach ($this->assetCollections['javascript']['single'] as $index => $asset) {
+            $assetManager->set('javascript_single_' . $index, $asset);
+            $this->head[] = $this->getTag('/public/assets/' . $asset->getTargetPath(), 'javascript');
+        }
+
+        $nameHash = '';
+
+        foreach ($this->assetCollections['css']['combined'] as $asset) {
+            $nameHash .= $asset->getTargetPath();
+        }
+
+        $this->assetCollections['css']['combined']->setTargetPath($this->getAssetName($nameHash, ASSETS_CSS_NAMESPACE));
+
+        $assetManager->set('css', $this->assetCollections['css']['combined']);
+        $this->head[] = $this->getTag('/public/assets/' . $this->assetCollections['css']['combined']->getTargetPath(), 'css');
+        
+        foreach ($this->assetCollections['css']['single'] as $index => $asset) {
+            $assetManager->set('css_single_' . $index, $asset);
+            $this->head[] = $this->getTag('/public/assets/' . $asset->getTargetPath(), 'css');
+        }
+
+        $assetWriter = new AssetWriter('public/assets');
+        $assetWriter->writeManagerAssets($assetManager);
+        
+        $head = implode("\n", $this->head);
+
+        return $head;
+    }
+
+    /**
+     * Add CSS file to template head
+     * @param string $css
+     * @param array $options
+     */
+    public function includeCSS($css, $options)
+    {
+        $options = array_merge(['single' => false, 'filter' => true, 'bypass' => false], $options);        
+        
+        if ($this->debug || $options['bypass'] || strpos($css, 'http') !== false) {
+            $this->assetCollections['css']['bypass'][] = $css;
+            return;
+        }        
+        
+        $asset = new FileAsset(DIR_ROOT . $css);
+        $asset->setTargetPath($this->getAssetName($css, ASSETS_CSS_NAMESPACE));
+
+        if ($options['filter'] && $this->config->assets->minify->css) {
+            $asset->ensureFilter(new CssImportFilter());
+        }
+
+        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/css'));
+
+        if ($options['single']) {
+            $this->assetCollections['css']['single'][] = $asset;
+        } else {
+            $this->assetCollections['css']['combined']->add($asset);
+        }
+    }        
+
+    /**
+     * Add javascript file to template head
+     * @param string $js
+     * @param array $options
+     */
+    public function includeJS($js, $options = [])
+    {
+        $options = array_merge(['single' => false, 'filter' => true, 'bypass' => false], $options);
+
+        if ($this->debug || $options['bypass'] || strpos($js, 'http') !== false) {
+            $this->assetCollections['javascript']['bypass'][] = $js;
+            return;
+        }
+
+        $asset = new FileAsset(DIR_ROOT . $js);
+        $asset->setTargetPath($this->getAssetName($js, ASSETS_JAVASCRIPT_NAMESPACE));
+
+        if ($options['filter'] && $this->config->assets->minify->javascript) {
+            $asset->ensureFilter(new JSMinFilter());
+        }
+
+        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/js'));
+
+        if ($options['single']) {
+            $this->assetCollections['javascript']['single'][] = $asset;
+        } else {
+            $this->assetCollections['javascript']['combined']->add($asset);
+        }
+    }
 
     /**
      * Loads template
@@ -221,12 +423,21 @@ class Tpl
         $this->load($template, $data);
         return ob_get_clean();
     }
+
+    /**
+     * Set debug mode
+     * @param bool $mode
+     */
+    public function setDebug($mode) {
+        $this->debug = $mode;
+    }
     
     /**
      * Set title
      * @param string $title
      */
-    public function setTitle($title) {
+    public function setTitle($title)
+    {
         $this->head['title'] = '<title> ' . $title . '</title>';
     }
 }
