@@ -2,4 +2,5 @@ nbproject
 vendor
 data/log/*
 /data/cache/assets/*
+/public/assets/*
 composer.lock
