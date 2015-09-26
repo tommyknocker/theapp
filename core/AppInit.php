@@ -42,7 +42,7 @@ $log->pushProcessor(new PsrLogMessageProcessor());
 ErrorHandler::register($log);
 App::ld('Log', $log);
 
-App::Config('config.json.php');
+App::Config('config');
 
 $defaultLanguage = App::Config()->language_default;
 if($defaultLanguage) {

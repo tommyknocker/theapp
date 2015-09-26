@@ -223,7 +223,6 @@ class I18n
             if (!$this->isLoaded) {
                 $this->load();
             }
-
             return $this->dictionary && isset($this->dictionary->$section) && isset($this->dictionary->$section->$key) ? $this->dictionary->$section->$key : '[missing key: ' . $section . '.' . $key . ']';
         }
 
@@ -248,7 +247,8 @@ class I18n
                 return strlen($a) < strlen($b);
             });
             $files = array_filter($files, function($file) {
-                return substr($file, -5) === '.json';
+                
+                return substr($file, -9) === '.json.php';
             });
             return $files;
         }
@@ -297,9 +297,10 @@ class I18n
             // Check all file names
             foreach ($files as $file) {
                 // Extract locale from filename
-                $fileLocale = substr($file, 0, strlen($file) - 5);
+                $fileNameParts = explode('.', $file);
+                $fileLocale = $fileNameParts[0];                   
                 if (\Locale::filterMatches($language, $fileLocale)) { // Check if filename matches $lang
-                    return [App::JSON()->read('i18n' . DS . $file)->result, $fileLocale];
+                    return [App::JSON()->read('i18n' . DS . $fileLocale)->result, $fileLocale];
                 }
             }
             return null;
