@@ -45,7 +45,7 @@ class Tpl
      * @var object
      */
     private $config = null;
-    
+
     /**
      * Debug mode
      * @var bool
@@ -74,8 +74,8 @@ class Tpl
     public function addCSS($css, $options = [])
     {
         $options = array_merge(['single' => false, 'filter' => true], $options);
-        
-        $asset = new StringAsset($css);        
+
+        $asset = new StringAsset($css);
         $asset->setTargetPath($this->getAssetName($css, ASSETS_CSS_NAMESPACE));
 
         if ($options['filter'] && $this->config->assets->minify->css) {
@@ -88,7 +88,7 @@ class Tpl
             $this->assetCollections['css']['single'][] = $asset;
         } else {
             $this->assetCollections['css']['combined']->add($asset);
-        }                
+        }
     }
 
     /**
@@ -99,8 +99,8 @@ class Tpl
     public function addJS($js, $options = [])
     {
         $options = array_merge(['single' => false, 'filter' => true], $options);
-        
-        $asset = new StringAsset($js);        
+
+        $asset = new StringAsset($js);
         $asset->setTargetPath($this->getAssetName($css, ASSETS_JAVASCRIPT_NAMESPACE));
 
         if ($options['filter'] && $this->config->assets->minify->javascript) {
@@ -113,7 +113,7 @@ class Tpl
             $this->assetCollections['javascript']['single'][] = $asset;
         } else {
             $this->assetCollections['javascript']['combined']->add($asset);
-        }  
+        }
     }
 
     /**
@@ -223,6 +223,15 @@ class Tpl
     }
 
     /**
+     * Check if asset exists
+     * @param string $name
+     */
+    private function assetExists($name)
+    {
+        return file_exists(DIR_ROOT . 'public/assets/' . $name);
+    }
+
+    /**
      * Check if array is linear
      * @param array $array
      * @return boolean
@@ -263,8 +272,9 @@ class Tpl
      * @param string $path
      * @param string $type
      */
-    private function getTag($path, $type) {
-        switch($type) {
+    private function getTag($path, $type)
+    {
+        switch ($type) {
             case 'css':
                 return '<link rel="stylesheet" type="text/css" href="' . $path . '"/>';
             case 'javascript':
@@ -273,58 +283,64 @@ class Tpl
                 throw new Exception('No such script tag');
         }
     }
-    
+
     /**
      * Return head contents
      * @return string
      */
     public function head()
     {
-        foreach($this->assetCollections['javascript']['bypass'] as $asset) {
+        foreach ($this->assetCollections['javascript']['bypass'] as $asset) {
             $this->head[] = $this->getTag($asset, 'javascript');
-        }        
-        
-        foreach($this->assetCollections['css']['bypass'] as $asset) {
+        }
+
+        foreach ($this->assetCollections['css']['bypass'] as $asset) {
             $this->head[] = $this->getTag($asset, 'css');
-        }        
-        
+        }
+
         $assetManager = new AssetManager();
 
         $nameHash = '';
-
-        foreach ($this->assetCollections['javascript']['combined'] as $asset) {
+        foreach ($this->assetCollections['javascript']['combined']->all() as $asset) {
             $nameHash .= $asset->getTargetPath();
         }
-
+        
         $this->assetCollections['javascript']['combined']->setTargetPath($this->getAssetName($nameHash, ASSETS_JAVASCRIPT_NAMESPACE));
-
-        $assetManager->set('javascript', $this->assetCollections['javascript']['combined']);
         $this->head[] = $this->getTag('/public/assets/' . $this->assetCollections['javascript']['combined']->getTargetPath(), 'javascript');
 
+        if (!$this->assetExists($this->assetCollections['javascript']['combined']->getTargetPath())) {
+            $assetManager->set('javascript', $this->assetCollections['javascript']['combined']);
+        }
+
         foreach ($this->assetCollections['javascript']['single'] as $index => $asset) {
-            $assetManager->set('javascript_single_' . $index, $asset);
+            if (!$this->assetExists($asset->getTargetPath())) {
+                $assetManager->set('javascript_single_' . $index, $asset);
+            }
             $this->head[] = $this->getTag('/public/assets/' . $asset->getTargetPath(), 'javascript');
         }
 
         $nameHash = '';
-
-        foreach ($this->assetCollections['css']['combined'] as $asset) {
+        foreach ($this->assetCollections['css']['combined']->all() as $asset) {
             $nameHash .= $asset->getTargetPath();
         }
 
         $this->assetCollections['css']['combined']->setTargetPath($this->getAssetName($nameHash, ASSETS_CSS_NAMESPACE));
-
-        $assetManager->set('css', $this->assetCollections['css']['combined']);
         $this->head[] = $this->getTag('/public/assets/' . $this->assetCollections['css']['combined']->getTargetPath(), 'css');
-        
+
+        if (!$this->assetExists($this->assetCollections['css']['combined']->getTargetPath())) {
+            $assetManager->set('css', $this->assetCollections['css']['combined']);
+        }
+
         foreach ($this->assetCollections['css']['single'] as $index => $asset) {
-            $assetManager->set('css_single_' . $index, $asset);
+            if (!$this->assetExists($asset->getTargetPath())) {
+                $assetManager->set('css_single_' . $index, $asset);
+            }
             $this->head[] = $this->getTag('/public/assets/' . $asset->getTargetPath(), 'css');
         }
 
         $assetWriter = new AssetWriter('public/assets');
         $assetWriter->writeManagerAssets($assetManager);
-        
+
         $head = implode("\n", $this->head);
 
         return $head;
@@ -337,28 +353,26 @@ class Tpl
      */
     public function includeCSS($css, $options)
     {
-        $options = array_merge(['single' => false, 'filter' => true, 'bypass' => false], $options);        
-        
+        $options = array_merge(['single' => false, 'filter' => true, 'bypass' => false], $options);
+
         if ($this->debug || $options['bypass'] || strpos($css, 'http') !== false) {
             $this->assetCollections['css']['bypass'][] = $css;
             return;
-        }        
-        
+        }
+
         $asset = new FileAsset(DIR_ROOT . $css);
-        $asset->setTargetPath($this->getAssetName($css, ASSETS_CSS_NAMESPACE));
+        $asset->setTargetPath($this->getAssetName($css . $asset->getLastModified(), ASSETS_CSS_NAMESPACE));
 
         if ($options['filter'] && $this->config->assets->minify->css) {
             $asset->ensureFilter(new CssImportFilter());
         }
-
-        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/css'));
 
         if ($options['single']) {
             $this->assetCollections['css']['single'][] = $asset;
         } else {
             $this->assetCollections['css']['combined']->add($asset);
         }
-    }        
+    }
 
     /**
      * Add javascript file to template head
@@ -375,13 +389,11 @@ class Tpl
         }
 
         $asset = new FileAsset(DIR_ROOT . $js);
-        $asset->setTargetPath($this->getAssetName($js, ASSETS_JAVASCRIPT_NAMESPACE));
+        $asset->setTargetPath($this->getAssetName($js . $asset->getLastModified(), ASSETS_JAVASCRIPT_NAMESPACE));
 
         if ($options['filter'] && $this->config->assets->minify->javascript) {
             $asset->ensureFilter(new JSMinFilter());
         }
-
-        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/js'));
 
         if ($options['single']) {
             $this->assetCollections['javascript']['single'][] = $asset;
@@ -428,10 +440,11 @@ class Tpl
      * Set debug mode
      * @param bool $mode
      */
-    public function setDebug($mode) {
+    public function setDebug($mode)
+    {
         $this->debug = $mode;
     }
-    
+
     /**
      * Set title
      * @param string $title
