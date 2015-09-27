@@ -47,6 +47,12 @@ class App
     private static $instance = null;
 
     /**
+     * Objects stack
+     * @var array 
+     */
+    private $stack = [];
+
+    /**
      * Protect from creating object
      */
     private function __construct()
@@ -68,6 +74,16 @@ class App
     private function __wakeup()
     {
         
+    }
+
+    /**
+     * Get object from stack
+     * @return string
+     */
+    private function getFromStack()
+    {
+        $object = array_pop($this->stack);
+        return $object;
     }
 
     /**
@@ -104,6 +120,7 @@ class App
 
         $app = self::getInstance();
 
+
         $currentObj = &$app->objects[$app->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
@@ -112,12 +129,19 @@ class App
 
         switch ($param) {
             case 'instance':
-                return $currentObj;
+                $result = $currentObj;
+                break;
             case 'result':
-                return $app->objects[$app->currentObject]['result'];
+                $result = $app->objects[$app->currentObject]['result'];
+                break;
             default:
-                return $currentObj->$param;
+                $result = $currentObj->$param;
+                break;
         }
+
+        $app->currentObject = $app->getFromStack();
+        
+        return $result;
     }
 
     /**
@@ -135,7 +159,7 @@ class App
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $app->currentObject . " wasn't initialized");
-        }
+        }        
 
         switch ($param) {
             case 'instance':
@@ -148,6 +172,8 @@ class App
             default:
                 $currentObj->$param = $value;
         }
+        
+        $app->currentObject = $app->getFromStack();
     }
 
     /**
@@ -160,7 +186,7 @@ class App
     {
 
         $app = self::getInstance();
-
+        
         $currentObj = &$app->objects[$app->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
@@ -168,7 +194,13 @@ class App
         }
 
         if (!$app->objects[$app->currentObject]['callable'] && !method_exists($currentObj, $method)) {
-            throw new Exception("Class " . $app->currentObject . " has no method " . $method);
+            $object = $app->getFromStack();
+            if ($object) {
+                $app->currentObject = $object;
+                call_user_method_array('__call', $app, [$method, $params]);
+            } else {
+                throw new Exception("Class " . $app->currentObject . " has no method " . $method);
+            }
         }
 
         if (in_array('result', $params, true)) {
@@ -176,15 +208,25 @@ class App
         }
 
         $currentObject = $app->currentObject;
-        if($app->objects[$app->currentObject]['callable'] && !method_exists($currentObj, $method)) {
+        if ($app->objects[$app->currentObject]['callable'] && !method_exists($currentObj, $method)) {
             $objectReflectionMethod = new ReflectionMethod($currentObj, '__call');
-            $params = array_merge([$method], [$params]); 
+            $params = array_merge([$method], [$params]);
             $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
-        } else { 
-            $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
-            $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+        } else {
+            try {
+                $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
+                $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+            } catch (ReflectionException $e) {
+                $object = $app->getFromStack();
+                if ($object) {
+                    $app->currentObject = $object;
+                    call_user_method_array('__call', $app, [$method, $params]);
+                } else {
+                    throw new Exception("Class " . $app->currentObject . " has no method " . $method);
+                }
+            }
         }
-        
+
         $app->currentObject = $currentObject;
 
         return $app;
@@ -200,17 +242,16 @@ class App
     {
 
         $app = self::getInstance();
-
         $app->currentObject = $name;
-
+        
         if (isset($app->objects[$name]) && $app->objects[$name]['singleton']) {
+            $app->setToStack($app->currentObject);
             return $app;
         }
         
         try {
             $obj = new ReflectionClass('\\App\\Core\\' . $name);
         } catch (Exception $e) {
-
             if (!class_exists($name)) {
                 throw new Exception('Class ' . $name . ' does not exist');
             } else {
@@ -222,11 +263,12 @@ class App
             throw new Exception('Cannot create object from class: ' . $name);
         }
 
+        $app->setToStack($app->currentObject);        
         $app->objects[$name] = [];
-
         $currentObject = $app->currentObject;
         $app->objects[$name]['instance'] = $obj->getConstructor() ? $obj->newInstanceArgs($args) : $obj->newInstance();
-        $app->currentObject = $currentObject;
+        $app->currentObject = $currentObject;        
+        
         $traits = $obj->getTraitNames();
         $app->objects[$name]['singleton'] = is_array($traits) && in_array('TNoSingleton', $traits, true) ? false : true;
         $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
@@ -265,7 +307,17 @@ class App
         $app->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
         $app->objects[$name]['result'] = null;
 
+        $app->setToStack($app->currentObject);
+
         return $app;
+    }
+    
+    /**
+     * Remove current class from stack (for objects that implement their own __call/__get/__set methods)
+     */
+    public static function removeFromStack() {
+        $app = self::getInstance();
+        $app->getFromStack();
     }
 
     /**
@@ -275,5 +327,14 @@ class App
     public function sel($name, $args)
     {
         return self::__callStatic($name, $args);
+    }
+
+    /**
+     * Set object to stack
+     * @param sting $object
+     */
+    private function setToStack($object)
+    {
+        array_push($this->stack, $object);
     }
 }
