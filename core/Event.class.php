@@ -185,7 +185,7 @@ class Event
         $isFired = $this->eventEmitter->emit($event, $arguments);
 
         if ($isFired) {
-            App::Container()->set('fired:' . $event, 'yes');
+            App::Container()->{'fired:' . $event} = 'yes';
         }
 
         if (strpos($event, 'cli:') !== false || strpos($event, 'web:') !== false) {
@@ -194,8 +194,8 @@ class Event
 
             // set web:|cli: and all: event state to fired
             if ($isFired) {
-                App::Container()->set('fired:' . $event, 'yes');
-                App::Container()->set('fired:' . $allEvent, 'yes');
+                App::Container()->{'fired:' . $event} = 'yes';
+                App::Container()->{'fired:' . $allEvent} = 'yes';
             }
         }
     }
@@ -208,8 +208,7 @@ class Event
     public function isFired($event)
     {
         $event = mb_strtolower($event, 'UTF-8');
-
-        return App::Container()->get('fired:' . $event)->result === 'yes';
+        return App::Container()->{'fired:' . $event} === 'yes';
     }
     
     /**
