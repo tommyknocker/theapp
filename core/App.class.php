@@ -17,6 +17,7 @@
  * @method \App\Core\Format \App\Core\Format
  * @method \App\Core\Get \App\Core\Get
  * @method \App\Core\Handler \App\Core\Handler
+ * @method \App\Core\HTTP \App\Core\HTTP
  * @method \App\Core\Log \Monolog\Logger
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
