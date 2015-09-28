@@ -31,12 +31,14 @@ class Tpl
         'css' => [
             'combined' => [],
             'single' => [],
-            'bypass' => []
+            'bypass' => [],
+            'bypass_script' => []
         ],
         'javascript' => [
             'combined' => [],
             'single' => [],
-            'bypass' => []
+            'bypass' => [],
+            'bypass_script' => []
         ]
     ];
 
@@ -75,6 +77,11 @@ class Tpl
     {
         $options = array_merge(['single' => false, 'filter' => true], $options);
 
+        if ($this->debug || $options['bypass']) {
+            $this->assetCollections['css']['bypass_script'][] = $css;
+            return;
+        }                
+        
         $asset = new StringAsset($css);
         $asset->setTargetPath($this->getAssetName($css, ASSETS_CSS_NAMESPACE));
 
@@ -100,6 +107,11 @@ class Tpl
     {
         $options = array_merge(['single' => false, 'filter' => true], $options);
 
+        if ($this->debug || $options['bypass']) {
+            $this->assetCollections['javascript']['bypass_script'][] = $js;
+            return;
+        }        
+        
         $asset = new StringAsset($js);
         $asset->setTargetPath($this->getAssetName($css, ASSETS_JAVASCRIPT_NAMESPACE));
 
@@ -163,12 +175,13 @@ class Tpl
      * add javascript variable to head
      * @param string $name
      * @param mixed $variable
+     * @param array $options
      */
-    public function addJSVariable($name, $variable)
+    public function addJSVariable($name, $variable, $options = [])
     {
         $result = (strpos($name, '.') === false ? 'var ' : '') . $name . ' = ';
         $result .= $this->addJSHelper($variable) . ';';
-        $this->addJS($result);
+        $this->addJS($result, $options);
     }
 
     /**
@@ -269,16 +282,20 @@ class Tpl
 
     /**
      * Get script tag
-     * @param string $path
+     * @param string $script
      * @param string $type
      */
-    private function getTag($path, $type)
+    private function getTag($script, $type)
     {
         switch ($type) {
             case 'css':
-                return '<link rel="stylesheet" type="text/css" href="' . $path . '"/>';
+                return '<link rel="stylesheet" type="text/css" href="' . $script . '"/>';
+            case 'css_script':
+                return '<style type="text/css">' . $script . '</style>';
             case 'javascript':
-                return '<script type="text/javascript" src="' . $path . '"></script>';
+                return '<script type="text/javascript" src="' . $script . '"></script>';
+            case 'javascript_script':
+                return '<script type="text/javascript">' . $script . '</script>';
             default:
                 throw new Exception('No such script tag');
         }
@@ -341,8 +358,16 @@ class Tpl
         $assetWriter = new AssetWriter('public/assets');
         $assetWriter->writeManagerAssets($assetManager);
 
-        $head = implode("\n", $this->head);
+        foreach ($this->assetCollections['javascript']['bypass_script'] as $asset) {            
+            $this->head[] = $this->getTag($asset, 'javascript_script');
+        }
 
+        foreach ($this->assetCollections['css']['bypass_script'] as $asset) {
+            $this->head[] = $this->getTag($asset, 'css_script');
+        }        
+        
+        $head = implode("\n", $this->head);
+                
         return $head;
     }
 
@@ -351,7 +376,7 @@ class Tpl
      * @param string $css
      * @param array $options
      */
-    public function includeCSS($css, $options)
+    public function includeCSS($css, $options = [])
     {
         $options = array_merge(['single' => false, 'filter' => true, 'bypass' => false], $options);
 
