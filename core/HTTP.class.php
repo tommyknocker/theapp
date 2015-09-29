@@ -17,6 +17,7 @@ class HTTP
     private $statusCodes = [
         200 => 'HTTP/1.1 200 OK',
         201 => 'HTTP/1.1 201 Created',
+        204 => 'HTTP/1.1 204 No Content',
         301 => 'HTTP/1.1 301 Moved Permanently',
         302 => 'HTTP/1.1 302 Found',
         304 => 'HTTP/1.1 304 Not Modified',
