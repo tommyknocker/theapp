@@ -11,6 +11,9 @@
         "login": "theapp",
         "password": "theapp"
     },
+    "i18n": {
+        "autoadd": true
+    },    
     "language": {
         "default": "en"
     },

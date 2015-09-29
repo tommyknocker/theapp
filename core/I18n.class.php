@@ -125,6 +125,24 @@ class I18n
         }
 
         /**
+         * Add language key to specified section
+         * @param string $section
+         * @param string $key
+         */
+        public function addKey($section, $key, $value) {
+            
+            if(!is_object($this->dictionary)) {
+                $this->dictionary = new \stdClass();                
+            }
+            
+            if(!is_object($this->dictionary->$section)) {
+                $this->dictionary->$section = new \stdClass();
+            }
+            
+            $this->dictionary->$section->$key = $value;
+        }
+        
+        /**
          * Determine languages, that can be used
          */
         private function determineLanguage()
@@ -223,7 +241,14 @@ class I18n
             if (!$this->isLoaded) {
                 $this->load();
             }
-            return $this->dictionary && isset($this->dictionary->$section) && isset($this->dictionary->$section->$key) ? $this->dictionary->$section->$key : '[missing key: ' . $section . '.' . $key . ']';
+            $message = $this->dictionary && isset($this->dictionary->$section) && isset($this->dictionary->$section->$key) ? $this->dictionary->$section->$key : null;
+                        
+            if(!$message && App::Config()->i18n_autoadd) {
+                $this->addKey($section, $key, $key);
+                App::JSON()->write('i18n/' . $this->locale, $this->dictionary);
+            }
+            
+            return $message ?: '[missing key: ' . $section . '.' . $key . ']';
         }
 
         /**
