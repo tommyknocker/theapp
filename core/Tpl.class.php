@@ -89,8 +89,6 @@ class Tpl
             $asset->ensureFilter(new CssImportFilter());
         }
 
-        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/css'));
-
         if ($options['single']) {
             $this->assetCollections['css']['single'][] = $asset;
         } else {
@@ -113,13 +111,11 @@ class Tpl
         }        
         
         $asset = new StringAsset($js);
-        $asset->setTargetPath($this->getAssetName($css, ASSETS_JAVASCRIPT_NAMESPACE));
+        $asset->setTargetPath($this->getAssetName($js, ASSETS_JAVASCRIPT_NAMESPACE));
 
         if ($options['filter'] && $this->config->assets->minify->javascript) {
             $asset->ensureFilter(new JSMinFilter());
         }
-
-        $asset = new AssetCache($asset, new FilesystemCache(DIR_DATA . 'cache/assets/js'));
 
         if ($options['single']) {
             $this->assetCollections['javascript']['single'][] = $asset;
