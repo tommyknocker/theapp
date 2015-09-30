@@ -118,14 +118,10 @@ class App
      */
     public function __get($param)
     {
-
-        $app = self::getInstance();
-
-
-        $currentObj = &$app->objects[$app->currentObject]['instance'];
+        $currentObj = &$this->objects[$this->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
-            throw new Exception("Class " . $app->currentObject . " wasn't initialized");
+            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
         }
 
         switch ($param) {
@@ -133,14 +129,14 @@ class App
                 $result = $currentObj;
                 break;
             case 'result':
-                $result = $app->objects[$app->currentObject]['result'];
+                $result = $this->objects[$this->currentObject]['result'];
                 break;
             default:
                 $result = $currentObj->$param;
                 break;
         }
 
-        $app->currentObject = $app->getFromStack();
+        $this->currentObject = $this->getFromStack();
 
         return $result;
     }
@@ -153,28 +149,25 @@ class App
      */
     public function __set($param, $value)
     {
-
-        $app = self::getInstance();
-
-        $currentObj = &$app->objects[$app->currentObject]['instance'];
+        $currentObj = &$this->objects[$this->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
-            throw new Exception("Class " . $app->currentObject . " wasn't initialized");
+            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
         }
 
         switch ($param) {
             case 'instance':
                 if (is_object($value)) {
-                    $app->objects[$app->currentObject]['instance'] = $value;
+                    $this->objects[$this->currentObject]['instance'] = $value;
                 } else {
-                    throw new Exception("Couldn't set instance of the class " . $app->currentObject);
+                    throw new Exception("Couldn't set instance of the class " . $this->currentObject);
                 }
                 break;
             default:
                 $currentObj->$param = $value;
         }
 
-        $app->currentObject = $app->getFromStack();
+        $this->currentObject = $this->getFromStack();
     }
 
     /**
