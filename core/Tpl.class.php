@@ -385,6 +385,11 @@ class Tpl
             return;
         }
 
+        if(!is_readable(DIR_ROOT . $css)) {
+            App::Log()->addWarning('No such css {css}', ['css' => $css]);
+            return false;
+        }        
+        
         $asset = new FileAsset(DIR_ROOT . $css);
         $asset->setTargetPath($this->getAssetName($css . $asset->getLastModified(), ASSETS_CSS_NAMESPACE));
 
@@ -400,6 +405,29 @@ class Tpl
     }
 
     /**
+     * Copy font to public/fonts
+     * @param string $font
+     * @return bool
+     */
+    public function includeFont($font) {
+        $sourcePath = DIR_ROOT . $font;
+        $targetPath = DIR_ROOT . '/public/fonts/' . basename($font);
+        
+        if(!is_readable($sourcePath)) {
+            App::Log()->addWarning('No such font {font}', ['font' => $font]);
+            return false;
+        }
+        
+        $sourceLastModified = filemtime($sourcePath);
+        $targetLastModifed  = is_readable($targetPath) ? filemtime($targetPath) : 0;
+        
+        if($sourceLastModified > $targetLastModifed) {
+            return copy($sourcePath, $targetPath);
+        }
+    }
+    
+    
+    /**
      * Add javascript file to template head
      * @param string $js
      * @param array $options
@@ -413,6 +441,11 @@ class Tpl
             return;
         }
 
+        if(!is_readable(DIR_ROOT . $js)) {
+            App::Log()->addWarning('No such js {js}', ['css' => $js]);
+            return false;
+        }            
+        
         $asset = new FileAsset(DIR_ROOT . $js);
         $asset->setTargetPath($this->getAssetName($js . $asset->getLastModified(), ASSETS_JAVASCRIPT_NAMESPACE));
 
@@ -426,7 +459,7 @@ class Tpl
             $this->assetCollections['javascript']['combined']->add($asset);
         }
     }
-
+    
     /**
      * Loads template
      * @param string $template
