@@ -268,11 +268,11 @@ class App
         $app->objects[$name] = [];
 
         $currentObject = $app->currentObject;
-        //$stack = $app->stack;
+        $stack = $app->stack;
 
         $app->objects[$name]['instance'] = $obj->getConstructor() ? $obj->newInstanceArgs($args) : $obj->newInstance();
 
-        //$app->stack = $stack;
+        $app->stack = $stack;
         $app->currentObject = $currentObject;
 
 
