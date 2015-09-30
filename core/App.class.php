@@ -17,7 +17,7 @@
  * @method \App\Core\Format \App\Core\Format
  * @method \App\Core\Get \App\Core\Get
  * @method \App\Core\Handler \App\Core\Handler
- * @method \App\Core\HTTP \App\Core\HTTP
+ * @method \App\Core\HTTP \App\Core\HTTP 
  * @method \App\Core\Log \Monolog\Logger
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
@@ -185,62 +185,52 @@ class App
      */
     public function __call($method, $params)
     {
-
-        $app = self::getInstance();
-
-        $currentObj = &$app->objects[$app->currentObject]['instance'];
+        $currentObj = &$this->objects[$this->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
-            throw new Exception("Class " . $app->currentObject . " wasn't initialized");
-        }
-
-        
-        if (!$app->objects[$app->currentObject]['callable'] && !method_exists($currentObj, $method)) {
-            $object = $app->getFromStack();
-            if ($object) {
-                $app->currentObject = $object;
-                call_user_method_array('__call', $app, [$method, $params]);
-            } else {
-                throw new Exception("Class " . $app->currentObject . " has no method " . $method);
-            }
+            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
         }
 
         if (in_array('result', $params, true)) {
-            $params[array_search('result', $params)] = $app->objects[$app->currentObject]['result'];
+            $params[array_search('result', $params)] = $this->objects[$this->currentObject]['result'];
         }
 
-        $currentObject = $app->currentObject;
-        if ($app->objects[$app->currentObject]['callable'] && !method_exists($currentObj, $method)) {
+        $currentObject = $this->currentObject;
+        $stack = $this->stack;
+
+        if ($this->objects[$this->currentObject]['callable'] && !method_exists($currentObj, $method)) {
             try {
                 $objectReflectionMethod = new ReflectionMethod($currentObj, '__call');
                 $params = array_merge([$method], [$params]);
-                $app->objects[$app->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
-            } catch (Exception $e) {
-                $object = $app->getFromStack();
+                $this->objects[$this->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+            } catch (ReflectionException $e) {
+                $object = $this->getFromStack();
                 if ($object) {
-                    $app->currentObject = $object;
-                    call_user_method_array('__call', $app, [$method, $params]);
+                    $this->currentObject = $object;
+                    call_user_func_array([$this, '__call'], [$method, $params]);
                 } else {
-                    throw new Exception("Class " . $app->currentObject . " has no method " . $method);
+                    throw new Exception("Class " . $this->currentObject . " has no method " . $method);
                 }
             }
         } else {
-            try {                
-                $app->objects[$app->currentObject]['result'] = call_user_method_array($method, $currentObj, $params);
-            } catch (Exception $e) {
-                $object = $app->getFromStack();
+            try {
+                $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
+                $this->objects[$this->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
+            } catch (ReflectionException $e) {
+                $object = $this->getFromStack();
                 if ($object) {
-                    $app->currentObject = $object;
-                    call_user_method_array('__call', $app, [$method, $params]);
+                    $this->currentObject = $object;
+                    call_user_func_array([$this, '__call'], [$method, $params]);
                 } else {
-                    throw new Exception("Class " . $app->currentObject . " has no method " . $method);
+                    throw new Exception("Class " . $this->currentObject . " has no method " . $method);
                 }
             }
         }
 
-        $app->currentObject = $currentObject;
+        $this->stack = $stack;
+        $this->currentObject = $currentObject;
 
-        return $app;
+        return $this;
     }
 
     /**
@@ -276,9 +266,15 @@ class App
 
         $app->setToStack($app->currentObject);
         $app->objects[$name] = [];
+
         $currentObject = $app->currentObject;
+        //$stack = $app->stack;
+
         $app->objects[$name]['instance'] = $obj->getConstructor() ? $obj->newInstanceArgs($args) : $obj->newInstance();
+
+        //$app->stack = $stack;
         $app->currentObject = $currentObject;
+
 
         $traits = $obj->getTraitNames();
         $app->objects[$name]['singleton'] = is_array($traits) && in_array('TNoSingleton', $traits, true) ? false : true;
