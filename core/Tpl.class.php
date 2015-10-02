@@ -303,14 +303,6 @@ class Tpl
      */
     public function head()
     {
-        foreach ($this->assetCollections['javascript']['bypass'] as $asset) {
-            $this->head[] = $this->getTag($asset, 'javascript');
-        }
-
-        foreach ($this->assetCollections['css']['bypass'] as $asset) {
-            $this->head[] = $this->getTag($asset, 'css');
-        }
-
         $assetManager = new AssetManager();
 
         $nameHash = '';
@@ -354,6 +346,14 @@ class Tpl
         $assetWriter = new AssetWriter('public/assets');
         $assetWriter->writeManagerAssets($assetManager);
 
+        foreach ($this->assetCollections['javascript']['bypass'] as $asset) {
+            $this->head[] = $this->getTag($asset, 'javascript');
+        }
+
+        foreach ($this->assetCollections['css']['bypass'] as $asset) {
+            $this->head[] = $this->getTag($asset, 'css');
+        }        
+        
         foreach ($this->assetCollections['javascript']['bypass_script'] as $asset) {            
             $this->head[] = $this->getTag($asset, 'javascript_script');
         }
@@ -438,7 +438,7 @@ class Tpl
         }
 
         if(!is_readable(DIR_ROOT . $js)) {
-            App::Log()->addWarning('No such js {js}', ['css' => $js]);
+            App::Log()->addWarning('No such js {js}', ['js' => $js]);
             return false;
         }            
         
