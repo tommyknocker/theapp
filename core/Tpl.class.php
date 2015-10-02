@@ -189,7 +189,7 @@ class Tpl
     {
         switch (gettype($variable)) {
             case 'string':
-                return '"' . $variable . '"';
+                return '"' . addslashes($variable) . '"';
             case 'boolean':
                 return $variable ? 'true' : 'false';
             case 'integer':
