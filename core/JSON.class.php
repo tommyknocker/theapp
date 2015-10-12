@@ -34,6 +34,30 @@ class JSON
 
         return $data;
     }
+    
+    /**
+     * Sorting helper
+     * @param object $data
+     * @return object
+     */
+    private function sort($data) {
+        
+        $data = (array) $data;
+        
+        uksort($data, function($a, $b) {
+            $a = str_replace('_', '0', $a);
+            $b = str_replace('_', '0', $b);
+            return strcasecmp($a, $b);
+        });
+        
+        foreach($data as $index => $elem) {
+            if(is_object($elem)) {
+                $data[$index] = $this->sort($elem);
+            }
+        }
+        
+        return (object) $data;
+    }
 
     /**
      * Write data to json file. 
@@ -58,15 +82,9 @@ class JSON
             $data->__configuration->read = "protected<?php die(); ?>";
         }
 
-        // sort data to be sure that __configuration key is the first key in file
-        $data = (array) $data;
-        uksort($data, function($a, $b) {
-            $a = str_replace('_', '0', $a);
-            $b = str_replace('_', '0', $b);
-            return strcasecmp($a, $b);
-        });
-        $data = (object) $data;
+        // sort data before saving
+        $data = $this->sort($data);
 
-        return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT));
+        return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 }
