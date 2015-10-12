@@ -118,7 +118,7 @@ class App
      */
     public function __get($param)
     {
-        $currentObj = &$this->objects[$this->currentObject]['instance'];
+        $currentObj = $this->objects[$this->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -132,7 +132,7 @@ class App
                 $result = $this->objects[$this->currentObject]['result'];
                 break;
             default:
-                $result = $currentObj->$param;
+                $result = $currentObj->$param;                                                               
                 break;
         }
 
@@ -149,7 +149,7 @@ class App
      */
     public function __set($param, $value)
     {
-        $currentObj = &$this->objects[$this->currentObject]['instance'];
+        $currentObj = $this->objects[$this->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -178,7 +178,7 @@ class App
      */
     public function __call($method, $params)
     {
-        $currentObj = &$this->objects[$this->currentObject]['instance'];
+        $currentObj = $this->objects[$this->currentObject]['instance'];
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
