@@ -34,7 +34,6 @@ class Autoload
      */
     public function addPath($path)
     {
-
         if (!is_dir($path)) {
             throw new Exception('Path is not a directory: ' . $path);
         }
@@ -61,7 +60,6 @@ class Autoload
      */
     public function register()
     {
-
         if (!array_key_exists('path', $this->params)) {
             throw new Exception('No path\'s registered. Try addPath first');
         }
@@ -72,20 +70,37 @@ class Autoload
 
         $code = [];
 
-        if (array_key_exists('namespace', $this->params)) {
-            $code[] = '$ns = "\\\\' . str_replace('\\', '\\\\', $this->params['namespace']) . '\\\\"';
+        if (isset($this->params['namespace'])) {
+            $this->params['namespace'] = '\\' . trim($this->params['namespace']) . '\\';
         } else {
-            $code[] = '$ns = "\\\\"';
+            $this->params['namespace'] = '\\';
         }
 
-        $code[] = 'if(strpos("\\\\" . $class, $ns) !== 0) return false';
-        $code[] = '$class = explode("\\\\", $class)';
-        $code[] = '$class = array_pop($class)';
-        $code[] = '$file = "' . $this->params['path'] . DS . '" . $class . "' . $this->params['ext'] . '"';
-        $code[] = 'if(file_exists($file)) require_once($file)';
-
-        spl_autoload_register(create_function('$class', implode(';' . PHP_EOL, $code) . ';'));
+        spl_autoload_register($this->autoloader($this->params));
 
         $this->params = [];
+    }
+
+    /**
+     * Autoloader closure
+     * @param array $params
+     * @return \Closure
+     */
+    public function autoloader($params)
+    {
+        return function($class) use ($params) {
+            if (strpos('\\' . $class, $params['namespace']) !== 0) {
+                return false;
+            }
+
+            $class = explode('\\', $class);
+            $class = array_pop($class);
+
+            $file = $params['path'] . DS . $class . $params['ext'];
+
+            if (file_exists($file)) {
+                require_once($file);
+            }
+        };
     }
 }
