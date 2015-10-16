@@ -182,18 +182,21 @@ class Event
             $arguments = array($arguments);
         }
 
+        $listeners = $this->eventEmitter->listeners($event);        
         $isFired = $this->eventEmitter->emit($event, $arguments);
-
-        if ($isFired) {
+        
+        if ($listeners && $isFired) {            
             App::Container()->{'fired:' . $event} = 'yes';
         }
 
         if (strpos($event, 'cli:') !== false || strpos($event, 'web:') !== false) {
             $allEvent = str_replace(array('cli:', 'web:'), 'all:', $event);
+            
+            $listeners = $this->eventEmitter->listeners($allEvent);        
             $isFired = $this->eventEmitter->emit($allEvent, $arguments);
 
             // set web:|cli: and all: event state to fired
-            if ($isFired) {
+            if ($listeners && $isFired) {
                 App::Container()->{'fired:' . $event} = 'yes';
                 App::Container()->{'fired:' . $allEvent} = 'yes';
             }

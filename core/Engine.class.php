@@ -75,10 +75,10 @@ class Engine
             App::Event()->fire($this->getMode() . ':' . $path . ':before')
                 ->fire($this->getMode() . ':' . $path)
                 ->fire($this->getMode() . ':' . $path . ':after');
-        }
-
-        if (!App::Event()->isFired($this->getMode() . ':' . $path)->result) {
-            App::Event()->fire($this->getMode() . ':404');
+            
+            if (!App::Event()->isFired($this->getMode() . ':' . $path)->result) {
+                App::Event()->fire($this->getMode() . ':404');
+            }            
         }
 
         if ($requestMethod) {
