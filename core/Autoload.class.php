@@ -68,13 +68,7 @@ class Autoload
             $this->params['ext'] = '.php';
         }
 
-        $code = [];
-
-        if (isset($this->params['namespace'])) {
-            $this->params['namespace'] = '\\' . trim($this->params['namespace']) . '\\';
-        } else {
-            $this->params['namespace'] = '\\';
-        }
+        $this->params['namespace'] = isset($this->params['namespace']) ? trim($this->params['namespace'], '\\') : '';
 
         spl_autoload_register($this->autoloader($this->params));
 
@@ -89,12 +83,12 @@ class Autoload
     public function autoloader($params)
     {
         return function($class) use ($params) {
-            if (strpos('\\' . $class, $params['namespace']) !== 0) {
+            $namespace = explode('\\', $class);
+            $class = array_pop($namespace);
+
+            if (implode('\\', $namespace) !== $params['namespace']) {
                 return false;
             }
-
-            $class = explode('\\', $class);
-            $class = array_pop($class);
 
             $file = $params['path'] . DS . $class . $params['ext'];
 
