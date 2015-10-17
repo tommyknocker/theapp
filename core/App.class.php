@@ -62,115 +62,6 @@ class App
     }
 
     /**
-     *  Protect from cloning
-     */
-    private function __clone()
-    {
-        
-    }
-
-    /**
-     * Protect from unserializing
-     */
-    private function __wakeup()
-    {
-        
-    }
-
-    /**
-     * Get object from stack
-     * @return string
-     */
-    private function getFromStack()
-    {
-        $object = array_pop($this->stack);
-        return $object;
-    }
-
-    /**
-     * Get instance
-     * @return \App
-     */
-    private static function getInstance()
-    {
-
-        if (!self::$instance instanceOf App) {
-            self::$instance = new App();
-        }
-
-        return self::$instance;
-    }
-
-    /**
-     * Return the App version
-     * @return string
-     */
-    public function __toString()
-    {
-        return 'The App. Version ' . APP_VERSION;
-    }
-
-    /**
-     * Get value from class
-     * @param string  $param
-     * @throws Exception
-     * @return mixed
-     */
-    public function __get($param)
-    {
-        $currentObj = $this->objects[$this->currentObject]['instance'];
-
-        if (!is_object($currentObj)) {
-            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
-        }
-
-        switch ($param) {
-            case 'instance':
-                $result = $currentObj;
-                break;
-            case 'result':
-                $result = $this->objects[$this->currentObject]['result'];
-                break;
-            default:
-                $result = $currentObj->$param;                                                               
-                break;
-        }
-
-        $this->currentObject = $this->getFromStack();
-
-        return $result;
-    }
-
-    /**
-     * Set class variable
-     * @param string $param
-     * @param mixed $value
-     * @throws \Exception
-     */
-    public function __set($param, $value)
-    {
-        $currentObj = $this->objects[$this->currentObject]['instance'];
-
-        if (!is_object($currentObj)) {
-            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
-        }
-
-        switch ($param) {
-            case 'instance':
-                if (is_object($value)) {
-                    $this->objects[$this->currentObject]['instance'] = $value;
-                } else {
-                    throw new Exception("Couldn't set instance of the class " . $this->currentObject);
-                }
-                break;
-            default:
-                $currentObj->$param = $value;
-        }
-
-        $this->currentObject = $this->getFromStack();
-    }
-
-    /**
      * Call class method
      * @param string $method
      * @param array $params
@@ -278,6 +169,138 @@ class App
     }
 
     /**
+     *  Protect from cloning
+     */
+    private function __clone()
+    {
+        
+    }
+
+    /**
+     * Get value from class
+     * @param string  $param
+     * @throws Exception
+     * @return mixed
+     */
+    public function __get($param)
+    {
+        $currentObj = $this->objects[$this->currentObject]['instance'];
+
+        if (!is_object($currentObj)) {
+            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
+        }
+
+        switch ($param) {
+            case 'instance':
+                $result = $currentObj;
+                break;
+            case 'result':
+                $result = $this->objects[$this->currentObject]['result'];
+                break;
+            default:
+                $result = $currentObj->$param;
+                break;
+        }
+
+        $this->currentObject = $this->getFromStack();
+
+        return $result;
+    }
+
+    /**
+     * Set class variable
+     * @param string $param
+     * @param mixed $value
+     * @throws \Exception
+     */
+    public function __set($param, $value)
+    {
+        $currentObj = $this->objects[$this->currentObject]['instance'];
+
+        if (!is_object($currentObj)) {
+            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
+        }
+
+        switch ($param) {
+            case 'instance':
+                if (is_object($value)) {
+                    $this->objects[$this->currentObject]['instance'] = $value;
+                } else {
+                    throw new Exception("Couldn't set instance of the class " . $this->currentObject);
+                }
+                break;
+            default:
+                $currentObj->$param = $value;
+        }
+
+        $this->currentObject = $this->getFromStack();
+    }
+
+    /**
+     * Return the App version
+     * @return string
+     */
+    public function __toString()
+    {
+        return 'The App. Version ' . APP_VERSION;
+    }
+
+    /**
+     * unset() overloading
+     * @param striing $name
+     */
+    public function __unset($name)
+    {
+        $currentObj = $this->objects[$this->currentObject]['instance'];
+
+        if (!is_object($currentObj)) {
+            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
+        }
+
+        switch ($name) {
+            case 'instance':
+                unset($this->objects[$this->currentObject]);
+                break;
+            default:
+                unset($currentObj->$name);
+        }
+
+        $this->currentObject = $this->getFromStack();
+    }
+
+    /**
+     * Protect from unserializing
+     */
+    private function __wakeup()
+    {
+        
+    }
+
+    /**
+     * Get object from stack
+     * @return string
+     */
+    private function getFromStack()
+    {
+        $object = array_pop($this->stack);
+        return $object;
+    }
+
+    /**
+     * Get instance
+     * @return \App
+     */
+    private static function getInstance()
+    {
+
+        if (!self::$instance instanceOf App) {
+            self::$instance = new App();
+        }
+
+        return self::$instance;
+    }
+
+    /**
      * Manually put object into objects storage
      * @param string $string Object's alias
      * @param object $object Object
@@ -322,10 +345,10 @@ class App
     }
 
     /**
-     * Select current object in chain
+     * Switch current object in chain
      * @return \App
      */
-    public function sel($name, $args)
+    public function sw($name, $args)
     {
         return self::__callStatic($name, $args);
     }
