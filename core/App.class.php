@@ -358,8 +358,11 @@ class App
      * Switch current object in chain
      * @return \App
      */
-    public function sw($name, $args)
+    public function sw($name, $args = [])
     {
-        return self::__callStatic($name, $args);
+        $previousObjectResult = $this->objects[$this->currentObject]['result'];
+        self::__callStatic($name, $args);
+        $this->objects[$name]['result'] = $previousObjectResult;
+        return $this;
     }
 }
