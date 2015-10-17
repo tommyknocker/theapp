@@ -22,7 +22,7 @@
         "version": "1.0.0",
         "vendor": {
             "link": "https://theapp.pro",
-            "title": "The App Framework"
+            "title": "The App Microframework"
         }
     },
     "templates": {
