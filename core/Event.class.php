@@ -32,17 +32,10 @@ class Event
      * @var array
      */
     private $matched = null;
-    
-    /**
-     * Randomly generated chain replacer
-     * @var string 
-     */
-    private $chainReplacer = "";
 
     public function __construct()
     {
         $this->eventEmitter = new EventEmitter();
-        $this->chainReplacer = '{' . App::UUID()->v4()->result . '}';
     }
 
     /**
