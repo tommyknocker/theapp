@@ -21,6 +21,7 @@
         "lmammino/jsmin4assetic": "^1.0"
     },
     "require-dev": {
-        "simpletest/simpletest": "^1.1"
+        "phpunit/phpunit": "^5.0",
+        "phpunit/phpunit-skeleton-generator": "^2.0"
     }
 }

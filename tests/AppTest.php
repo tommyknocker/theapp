@@ -5,16 +5,14 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
-require_once('includes/config.php');
-
-class TestApp extends UnitTestCase
+class AppTest extends PHPUnit_Framework_TestCase
 {
 
     public function setUp()
     {
-        require_once 'includes/TestChaining.class.php';
-        require_once 'includes/TestCallable.class.php';
-        require_once 'includes/TestNoSingleton.class.php';
+        require_once '__files/TestChaining.class.php';
+        require_once '__files/TestCallable.class.php';
+        require_once '__files/TestNoSingleton.class.php';
     }
 
     public function testArgumentsPassedToConstruct()
@@ -68,7 +66,7 @@ class TestApp extends UnitTestCase
         try{
             App::TestChaining2()->instance;            
         } catch (Exception $ex) {
-            $this->assertEqual($ex->getMessage(), 'Class TestChaining2 does not exist');
+            $this->assertEquals('Class TestChaining2 does not exist', $ex->getMessage());
         }
     }
     
