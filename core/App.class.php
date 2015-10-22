@@ -19,12 +19,11 @@
  * @method \App\Core\Handler \App\Core\Handler
  * @method \App\Core\HTTP \App\Core\HTTP 
  * @method \App\Core\Log \Monolog\Logger
- * @method \App\Core\I18n \App\Core\I18n 
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
- * @method \App\Core\Tpl \App\Core\Tpl 
+ * @method \App\Core\Tpl \App\Core\Tpl
+ * @method \App\Core\I18n \App\Core\I18n
  * @method \App\Core\UUID \App\Core\UUID
- *  
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  * */
 class App
@@ -87,9 +86,9 @@ class App
             $params = array_merge([$method], [$params]);
             $method = '__call';
         }
-        
+
         $this->pushToStack('state', [$this->currentObject, $this->stack['object']]);
-        
+
         try {
             $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
             $this->objects[$this->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
@@ -104,7 +103,7 @@ class App
         }
 
         list($this->currentObject, $this->stack['object']) = $this->popFromStack('state');
-        
+
         return $this;
     }
 
@@ -130,7 +129,7 @@ class App
         } catch (ReflectionException $e) {
             if (!class_exists($name)) {
                 throw new Exception('Class ' . $name . ' does not exist');
-            } else { 
+            } else {
                 $object = new ReflectionClass($name);
             }
         }
@@ -146,7 +145,7 @@ class App
         $app->objects[$name]['instance'] = $object->getConstructor() ? $object->newInstanceArgs($args) : $object->newInstance();
 
         list($app->currentObject, $app->stack['object']) = $app->popFromStack('state');
-        
+
         return $app;
     }
 
@@ -259,6 +258,15 @@ class App
     }
 
     /**
+     * Get current object instance
+     * @return object
+     */
+    private function getCurrentObjectIntance()
+    {
+        return $this->objects[$this->currentObject]['instance'];
+    }
+
+    /**
      * Get instance
      * @return \App
      */
@@ -273,12 +281,18 @@ class App
     }
 
     /**
-     * Get current object instance
-     * @return object
+     * Collect all trait names from object
+     * @param \ReflectionClass $reflectionObject
+     * @return array
      */
-    private function getCurrentObjectIntance()
+    private function getTraitNamesRecursive($reflectionObject)
     {
-        return $this->objects[$this->currentObject]['instance'];
+        $names = [];
+        foreach ($reflectionObject->getTraits() as $trait) {
+            $names[] = $trait->name;
+            $names = array_merge($names, $this->getTraitNamesRecursive($trait));
+        }
+        return $names;
     }
 
     /**
@@ -289,7 +303,8 @@ class App
     private function initObject($name, $object)
     {
         $this->objects[$name] = [];
-        $traits = $object->getTraitNames();
+        $traits = $this->getTraitNamesRecursive($object);
+
         $this->objects[$name]['singleton'] = is_array($traits) && in_array('TNoSingleton', $traits, true) ? false : true;
         $this->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
         $this->objects[$name]['result'] = null;
@@ -334,8 +349,8 @@ class App
     private function popFromStack($type)
     {
         return array_pop($this->stack[$type]);
-    }    
-    
+    }
+
     /**
      * Set data to stack
      * @param sting $type
