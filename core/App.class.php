@@ -19,11 +19,12 @@
  * @method \App\Core\Handler \App\Core\Handler
  * @method \App\Core\HTTP \App\Core\HTTP 
  * @method \App\Core\Log \Monolog\Logger
+ * @method \App\Core\I18n \App\Core\I18n 
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
- * @method \App\Core\Tpl \App\Core\Tpl
- * @method \App\Core\I18n \App\Core\I18n
- * 
+ * @method \App\Core\Tpl \App\Core\Tpl 
+ * @method \App\Core\UUID \App\Core\UUID
+ *  
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  * */
 class App
