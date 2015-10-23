@@ -25,10 +25,10 @@ if (file_exists(DIR_ROOT . 'vendor/autoload.php')) {
 
 // register our own autoloader
 App::Autoload()->addNamespace('App\\Core')->addPath(DIR_ROOT . 'core')->addExt('.class.php')->register()
-    ->addPath(DIR_ROOT . 'abstract')->addExt('.class.php')->register()
-    ->addPath(DIR_ROOT . 'interfaces')->addExt('.interface.php')->register()
-    ->addPath(DIR_ROOT . 'traits')->addExt('.trait.php')->register()
-    ->addPath(DIR_ROOT . 'models')->addExt('.model.php')->register()
+    ->addNamespace('App\\Abstracts')->addPath(DIR_ROOT . 'abstract')->addExt('.class.php')->register()
+    ->addNamespace('App\\Interfaces')->addPath(DIR_ROOT . 'interfaces')->addExt('.interface.php')->register()
+    ->addNamespace('App\\Traits')->addPath(DIR_ROOT . 'traits')->addExt('.trait.php')->register()
+    ->addNamespace('App\\Models')->addPath(DIR_ROOT . 'models')->addExt('.model.php')->register()
     ->addPath(DIR_ROOT . 'classes')->addExt('.class.php')->register();
 
 // Configure main logger

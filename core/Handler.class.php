@@ -14,8 +14,8 @@ use App\Handlers;
 class Handler
 {
 
-    use \TCallable,
-        \TNoSingleton;
+    use \App\Traits\CallMethod,
+        \App\Traits\NoSingleton;
 
     /**
      * Handler object

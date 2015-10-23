@@ -304,9 +304,9 @@ class App
     {
         $this->objects[$name] = [];
         $traits = $this->getTraitNamesRecursive($object);
-
-        $this->objects[$name]['singleton'] = is_array($traits) && in_array('TNoSingleton', $traits, true) ? false : true;
-        $this->objects[$name]['callable'] = is_array($traits) && in_array('TCallable', $traits, true);
+        
+        $this->objects[$name]['singleton'] = is_array($traits) && in_array('App\Traits\NoSingleton', $traits, true) ? false : true;
+        $this->objects[$name]['callable'] = is_array($traits) && in_array('App\Traits\CallMethod', $traits, true);
         $this->objects[$name]['result'] = null;
     }
 
