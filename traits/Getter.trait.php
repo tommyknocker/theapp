@@ -1,6 +1,6 @@
 <?php
 /**
- * Impletent smart magic getting
+ * Implement smart magic properties getting
  *
  * @author Tommyknocker <tommyknocker@theapp.pro>
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
