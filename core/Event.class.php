@@ -33,9 +33,16 @@ class Event
      */
     private $matched = null;
 
+    /**
+     * Randomly generated chain replacer
+     * @var string 
+     */
+    private $chainReplacer = "";
+
     public function __construct()
     {
         $this->eventEmitter = new EventEmitter();
+        $this->chainReplacer = '{' . App::UUID()->v4()->result . '}';
     }
 
     /**
@@ -46,19 +53,19 @@ class Event
     private function proceedExpressions($event)
     {
         $this->matched = null;
-        
+
         $eventChain = explode('/', $event);
 
         if (!$this->chains) {
             return $event;
         }
-        
+
         foreach ($this->chains as $block) {
             $key = 0;
-            $matched = []; 
-            
+            $matched = [];
+
             foreach ($block as $chain) {
-                
+
                 if (preg_match('/^\(.*\)$/', $chain) && preg_match('/^' . $chain . '$/', $eventChain[$key])) {
                     $matched[] = $eventChain[$key];
                     $key++;
@@ -67,8 +74,8 @@ class Event
                 } else {
                     break;
                 }
-                
-                if($key == count($block) && $key == count($eventChain)) {
+
+                if ($key == count($block) && $key == count($eventChain)) {
                     $this->matched = $matched;
                     return implode('/', $block);
                 }
@@ -164,34 +171,38 @@ class Event
      */
     public function fire($event, $arguments = array())
     {
+        $calledEvent = $event;
+        
         if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
             $event = $this->proceedExpressions($event);
         }
 
         $event = mb_strtolower($event, 'UTF-8');
+        $calledEvent = mb_strtolower($calledEvent, 'UTF-8');
 
         if (!is_array($arguments)) {
             $arguments = array($arguments);
         }
 
-        $listeners = $this->eventEmitter->listeners($event);        
+        $listeners = $this->eventEmitter->listeners($event);
         $isFired = $this->eventEmitter->emit($event, $arguments);
-        
-        if ($listeners && $isFired) {            
-            App::Container()->{'fired:' . $event} = 'yes';
+
+        if ($listeners && $isFired) {
+            App::Container()->{'fired:' . $calledEvent} = 'yes';
         }
 
         if (strpos($event, 'cli:') !== false || strpos($event, 'web:') !== false) {
             $allEvent = str_replace(array('cli:', 'web:'), 'all:', $event);
-            
-            $listeners = $this->eventEmitter->listeners($allEvent);        
+            $calledAllEvent = str_replace(array('cli:', 'web:'), 'all:', $calledEvent);
+
+            $listeners = $this->eventEmitter->listeners($allEvent);
             $isFired = $this->eventEmitter->emit($allEvent, $arguments);
 
             // set web:|cli: and all: event state to fired
             if ($listeners && $isFired) {
-                App::Container()->{'fired:' . $event} = 'yes';
-                App::Container()->{'fired:' . $allEvent} = 'yes';
+                App::Container()->{'fired:' . $calledEvent} = 'yes';
+                App::Container()->{'fired:' . $calledAllEvent} = 'yes';
             }
         }
     }
@@ -206,12 +217,13 @@ class Event
         $event = mb_strtolower($event, 'UTF-8');
         return App::Container()->{'fired:' . $event} === 'yes';
     }
-    
+
     /**
      * Retrive matched array
      * @return array
      */
-    public function getMatched() {
+    public function getMatched()
+    {
         return $this->matched;
     }
 }

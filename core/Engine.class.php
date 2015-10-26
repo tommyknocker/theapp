@@ -34,6 +34,9 @@ class Engine
         $this->setMode();
         App::Session()->start();
         $this->loadDBClass();
+
+        App::ld('User', new \User());        
+        
         $this->initHandlers();
         $this->process();
     }
@@ -76,7 +79,9 @@ class Engine
                 ->fire($this->getMode() . ':' . $path)
                 ->fire($this->getMode() . ':' . $path . ':after');
             
-            if (!App::Event()->isFired($this->getMode() . ':' . $path)->result) {
+            $isFired = App::Event()->isFired($this->getMode() . ':' . $path)->result || App::Event()->isFired($this->getMode() . ':get:' . $path)->result;
+            
+            if (!$isFired && $this->getMode() == ENGINE_MODE_WEB) {
                 App::Event()->fire($this->getMode() . ':404');
             }            
         }
