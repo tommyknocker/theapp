@@ -24,7 +24,8 @@ class HTTP
         400 => 'HTTP/1.1 400 Bad Request',
         401 => 'HTTP/1.1 401 Unauthorized',
         404 => 'HTTP/1.1 404 Not Found',
-        405 => 'HTTP/1.1 405 Method Not Allowed'
+        405 => 'HTTP/1.1 405 Method Not Allowed',
+        500 => 'HTTP/1.1 500 Internal Error'
     ];
     
     /**
@@ -55,7 +56,7 @@ class HTTP
         if(isset($this->statusCodes[$code])) {
             header($this->statusCodes[$code]);
         } else {
-            App::Log()->addWarning('No defined status code header for code {code}', ['code' => $code]);
+            \App::Log()->addWarning('No defined status code header for code {code}', ['code' => $code]);
         }
   
     }
