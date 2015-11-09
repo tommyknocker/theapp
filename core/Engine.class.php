@@ -34,9 +34,6 @@ class Engine
         $this->setMode();
         App::Session()->start();
         $this->loadDBClass();
-
-        App::ld('User', new \User());
-
         $this->initHandlers();
         $this->process();
     }
