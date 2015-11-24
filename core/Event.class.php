@@ -115,8 +115,9 @@ class Event
      * 
      * @param string $event Event to register for
      * @param string $classMethod
+     * @param int $priority
      */
-    public function subscribe($event, $classMethod)
+    public function subscribe($event, $classMethod, $priority = 100)
     {
         if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
@@ -157,7 +158,7 @@ class Event
                 throw new Exception('Method must be public');
             }
 
-            $this->eventEmitter->on($event, array(new $initMethod['class'], $classMethod));
+            $this->eventEmitter->on($event, [new $initMethod['class'], $classMethod], $priority);
         } catch (Exception $e) {
             App::Log()->addError('Cannot register method {method} to event {event}: {message}', ['method' => $classMethod, 'event' => $event, 'message' => $e->getMessage()]);
         }

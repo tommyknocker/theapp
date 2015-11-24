@@ -36,6 +36,16 @@ define('DIR_HANDLERS', DIR_ROOT . 'handlers' . DS);
 define('DIR_TEMPLATES', DIR_ROOT . 'templates' . DS);
 
 /**
+ * Assets directory
+ */
+define('DIR_PUBLIC', DIR_ROOT . 'public' . DS);
+
+/**
+ * Images
+ */
+define('DIR_IMAGES', DIR_PUBLIC . 'images' . DS);
+
+/**
  * Engine modes
  */
 define('ENGINE_MODE_WEB', 'web');
@@ -47,3 +57,10 @@ define('ENGINE_MODE_CLI', 'cli');
  */
 define('ASSETS_CSS_NAMESPACE', 'e36fcfb8-6ced-4f4f-a033-a034a526d002');
 define('ASSETS_JAVASCRIPT_NAMESPACE', '1086e336-e340-4512-a1f9-d06f66212829');
+
+/**
+ * Event priorities
+ */
+define('EVENT_PRIORITY_HIGH', 1);
+define('EVENT_PRIORITY_NORMAL', 100);
+define('EVENT_PRIORITY_LOW', 1000);
