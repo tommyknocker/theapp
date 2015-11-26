@@ -11,7 +11,7 @@
  * @method \App\Core\Container \App\Core\Container
  * @method \App\Core\Cron  \App\Core\Cron
  * @method \App\Core\Daemon \App\Core\Daemon
- * @method \App\Core\DB \App\Core\MysqliDb
+ * @method \App\Core\MysqliDb \App\Core\DB
  * @method \App\Core\Engine \App\Core\Engine
  * @method \App\Core\Event \App\Core\Event
  * @method \App\Core\Format \App\Core\Format
@@ -71,8 +71,8 @@ class App
      * @throws Exception
      */
     public function __call($method, $params)
-    {
-        $currentObj = $this->objects[$this->currentObject]['instance'];
+    {        
+        $currentObj = $this->getCurrentObjectIntance();
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -88,15 +88,15 @@ class App
         }
 
         $this->pushToStack('state', [$this->currentObject, $this->stack['object']]);
-
+        
         try {
             $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
             $this->objects[$this->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
         } catch (ReflectionException $e) {
             $object = $this->popFromStack('object');
-            if ($object) {
+            if ($object) {          
                 $this->currentObject = $object;
-                call_user_func_array([$this, '__call'], [$method, $params]);
+                $this->__call($method, $params);
             } else {
                 throw new Exception("Class " . $this->currentObject . " has no method " . $method);
             }
@@ -184,7 +184,7 @@ class App
         }
 
         $this->currentObject = $this->popFromStack('object');
-
+        
         return $result;
     }
 
