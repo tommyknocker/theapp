@@ -72,7 +72,7 @@ class App
      */
     public function __call($method, $params)
     {        
-        $currentObj = $this->getCurrentObjectIntance();
+        $currentObj = $this->getCurrentObjectInstance();
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -165,7 +165,7 @@ class App
      */
     public function __get($param)
     {
-        $currentObj = $this->getCurrentObjectIntance();
+        $currentObj = $this->getCurrentObjectInstance();
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -196,7 +196,7 @@ class App
      */
     public function __set($param, $value)
     {
-        $currentObj = $this->getCurrentObjectIntance();
+        $currentObj = $this->getCurrentObjectInstance();
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -232,7 +232,7 @@ class App
      */
     public function __unset($name)
     {
-        $currentObj = $this->getCurrentObjectIntance();
+        $currentObj = $this->getCurrentObjectInstance();
 
         if (!is_object($currentObj)) {
             throw new Exception("Class " . $this->currentObject . " wasn't initialized");
@@ -261,7 +261,7 @@ class App
      * Get current object instance
      * @return object
      */
-    private function getCurrentObjectIntance()
+    private function getCurrentObjectInstance()
     {
         return $this->objects[$this->currentObject]['instance'];
     }
