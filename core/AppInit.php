@@ -14,6 +14,7 @@ use App,
     Monolog\Processor\PsrLogMessageProcessor,
     Monolog\Logger;
 
+require_once 'State.class.php';
 require_once 'App.class.php';
 require_once 'Autoload.class.php';
 require_once DIR_DATA . 'shortcuts.php';

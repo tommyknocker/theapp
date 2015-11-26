@@ -1,6 +1,6 @@
 <?php
 /**
- * Direct handler execution
+ * Direct handler methods execution
  * 
  * App::Handler('HandlerName')->HandlerMethod();
  *
@@ -8,8 +8,6 @@
  * @license http://www.gnu.org/licenses/lgpl.txt LGPLv3
  */
 namespace App\Core;
-
-use App\Handlers;
 
 class Handler
 {
@@ -37,6 +35,8 @@ class Handler
      */
     public function __call($method, $arguments)
     {
-        return call_user_func_array([$this->handlerObject, $method], $arguments);
+        if(method_exists($this->handlerObject, $method)) {
+            return call_user_func_array([$this->handlerObject, $method], $arguments);
+        } 
     }
 }

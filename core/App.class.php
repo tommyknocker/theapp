@@ -19,6 +19,7 @@
  * @method \App\Core\Handler \App\Core\Handler
  * @method \App\Core\HTTP \App\Core\HTTP 
  * @method \App\Core\Log \Monolog\Logger
+ * @method \App\Core\Model \App\Core\Model
  * @method \App\Core\JSON \App\Core\JSON
  * @method \App\Core\Timer \App\Core\Timer
  * @method \App\Core\Tpl \App\Core\Tpl
@@ -36,32 +37,11 @@ class App
     private $currentObject = null;
 
     /**
-     * Instance of the App. For chaining support
-     * @var object
-     */
-    private static $instance = null;
-
-    /**
-     * Objects storage array 
-     * @var array
-     */
-    private $objects = [];
-
-    /**
-     * Objects stack
-     * @var array 
-     */
-    private $stack = [
-        'object' => [],
-        'state' => []
-    ];
-
-    /**
      * Protect from creating object
      */
-    private function __construct()
+    private function __construct($currentObject)
     {
-        
+        $this->currentObject = $currentObject;
     }
 
     /**
@@ -72,37 +52,19 @@ class App
      */
     public function __call($method, $params)
     {        
-        $currentObj = $this->getCurrentObjectInstance();
-
-        if (!is_object($currentObj)) {
-            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
-        }
+        $objectData = State::get($this->currentObject);
 
         if (in_array('result', $params, true)) {
-            $params[array_search('result', $params)] = $this->objects[$this->currentObject]['result'];
+            $params[array_search('result', $params)] = $objectData['result'];
         }
 
-        if ($this->objects[$this->currentObject]['callable'] && !method_exists($currentObj, $method)) {
+        if ($objectData['callable'] && !method_exists($objectData['instance'], $method)) {
             $params = array_merge([$method], [$params]);
             $method = '__call';
         }
-
-        $this->pushToStack('state', [$this->currentObject, $this->stack['object']]);
         
-        try {
-            $objectReflectionMethod = new ReflectionMethod($currentObj, $method);
-            $this->objects[$this->currentObject]['result'] = $objectReflectionMethod->invokeArgs($currentObj, $params);
-        } catch (ReflectionException $e) {
-            $object = $this->popFromStack('object');
-            if ($object) {          
-                $this->currentObject = $object;
-                $this->__call($method, $params);
-            } else {
-                throw new Exception("Class " . $this->currentObject . " has no method " . $method);
-            }
-        }
-
-        list($this->currentObject, $this->stack['object']) = $this->popFromStack('state');
+        $objectReflectionMethod = new ReflectionMethod($objectData['instance'], $method);
+        State::setResult($this->currentObject, $objectReflectionMethod->invokeArgs($objectData['instance'], $params));
 
         return $this;
     }
@@ -116,35 +78,31 @@ class App
     public static function __callStatic($name, $args)
     {
 
-        $app = self::getInstance();
-        $app->currentObject = $name;
+        $app = new self($name);
 
-        if (isset($app->objects[$name]) && $app->objects[$name]['singleton']) {
-            $app->pushToStack('object', $name);
+        $objectData = State::get($name);
+
+        if ($objectData && $objectData['singleton']) {
             return $app;
         }
 
         try {
-            $object = new ReflectionClass('\\App\\Core\\' . $name);
+            $objectInstance = new ReflectionClass('\\App\\Core\\' . $name);
         } catch (ReflectionException $e) {
             if (!class_exists($name)) {
                 throw new Exception('Class ' . $name . ' does not exist');
             } else {
-                $object = new ReflectionClass($name);
+                $objectInstance = new ReflectionClass($name);
             }
         }
 
-        if (!$object->isInstantiable()) {
+        if (!$objectInstance->isInstantiable()) {
             throw new Exception('Cannot create object from class: ' . $name);
         }
 
-        $app->pushToStack('object', $name);
-        $app->pushToStack('state', [$name, $app->stack['object']]);
-        $app->initObject($name, $object);
-
-        $app->objects[$name]['instance'] = $object->getConstructor() ? $object->newInstanceArgs($args) : $object->newInstance();
-
-        list($app->currentObject, $app->stack['object']) = $app->popFromStack('state');
+        State::set($name, 
+            $objectInstance->getConstructor() ? $objectInstance->newInstanceArgs($args) : $objectInstance->newInstance(), 
+            self::getObjectParams($name, $objectInstance));
 
         return $app;
     }
@@ -160,61 +118,31 @@ class App
     /**
      * Get value from class
      * @param string  $param
-     * @throws Exception
      * @return mixed
      */
     public function __get($param)
     {
-        $currentObj = $this->getCurrentObjectInstance();
-
-        if (!is_object($currentObj)) {
-            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
-        }
+        $objectData = State::get($this->currentObject);
 
         switch ($param) {
             case 'instance':
-                $result = $currentObj;
-                break;
+                return $objectData['instance'];
             case 'result':
-                $result = $this->objects[$this->currentObject]['result'];
-                break;
+                return $objectData['result'];
             default:
-                $result = $currentObj->$param;
-                break;
+                return $objectData['instance']->$param;
         }
-
-        $this->currentObject = $this->popFromStack('object');
-        
-        return $result;
     }
 
     /**
      * Set class variable
      * @param string $param
      * @param mixed $value
-     * @throws \Exception
      */
     public function __set($param, $value)
     {
-        $currentObj = $this->getCurrentObjectInstance();
-
-        if (!is_object($currentObj)) {
-            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
-        }
-
-        switch ($param) {
-            case 'instance':
-                if (is_object($value)) {
-                    $this->objects[$this->currentObject]['instance'] = $value;
-                } else {
-                    throw new Exception("Couldn't set instance of the class " . $this->currentObject);
-                }
-                break;
-            default:
-                $currentObj->$param = $value;
-        }
-
-        $this->currentObject = $this->popFromStack('object');
+        $objectData = State::get($this->currentObject);
+        $objectData['instance']->$param = $value;
     }
 
     /**
@@ -232,21 +160,15 @@ class App
      */
     public function __unset($name)
     {
-        $currentObj = $this->getCurrentObjectInstance();
-
-        if (!is_object($currentObj)) {
-            throw new Exception("Class " . $this->currentObject . " wasn't initialized");
-        }
+        $objectData = State::get($this->currentObject);
 
         switch ($name) {
             case 'instance':
-                unset($this->objects[$this->currentObject]);
+                State::delete($name);
                 break;
             default:
-                unset($currentObj->$name);
+                unset($objectData['instance']->$name);
         }
-
-        $this->currentObject = $this->popFromStack('object');
     }
 
     /**
@@ -258,56 +180,33 @@ class App
     }
 
     /**
-     * Get current object instance
-     * @return object
-     */
-    private function getCurrentObjectInstance()
-    {
-        return $this->objects[$this->currentObject]['instance'];
-    }
-
-    /**
-     * Get instance
-     * @return \App
-     */
-    private static function getInstance()
-    {
-
-        if (!self::$instance instanceOf App) {
-            self::$instance = new App();
-        }
-
-        return self::$instance;
-    }
-
-    /**
      * Collect all trait names from object
      * @param \ReflectionClass $reflectionObject
      * @return array
      */
-    private function getTraitNamesRecursive($reflectionObject)
+    private static function getTraitNamesRecursive($reflectionObject)
     {
         $names = [];
         foreach ($reflectionObject->getTraits() as $trait) {
             $names[] = $trait->name;
-            $names = array_merge($names, $this->getTraitNamesRecursive($trait));
+            $names = array_merge($names, self::getTraitNamesRecursive($trait));
         }
         return $names;
     }
 
     /**
-     * Store object's params in local storate
+     * Get object options
      * @param string $name
-     * @param object $object
+     * @param ReflectionObject $object
      */
-    private function initObject($name, $object)
-    {
-        $this->objects[$name] = [];
-        $traits = $this->getTraitNamesRecursive($object);
+    private static function getObjectParams($name, $object)
+    {           
+        $traits = self::getTraitNamesRecursive($object);        
         
-        $this->objects[$name]['singleton'] = is_array($traits) && in_array('App\Traits\NoSingleton', $traits, true) ? false : true;
-        $this->objects[$name]['callable'] = is_array($traits) && in_array('App\Traits\CallMethod', $traits, true);
-        $this->objects[$name]['result'] = null;
+        return [
+            'singleton' => is_array($traits) && in_array('App\Traits\NoSingleton', $traits, true) ? false : true,
+            'callable' => is_array($traits) && in_array('App\Traits\CallMethod', $traits, true)
+        ];
     }
 
     /**
@@ -316,69 +215,34 @@ class App
      * @param object $object Object
      * @param bool $overwrite Optional Overwrite protection
      * @throws \Exception
-     * @return \App
      */
     public static function ld($name, $object, $overwrite = false)
     {
-
-        $app = self::getInstance();
-
         if (!is_string($name) || !is_object($object)) {
             throw new Exception('Wrong params passed');
         }
 
-        if (array_key_exists($name, $app->objects) && !$overwrite) {
+        $objectData = State::get($name);        
+        
+        if ($objectData && !$overwrite) {
             throw new Exception('Object is already exists while overwrite is not allowed');
         }
 
-        $app->currentObject = $name;
-
         $reflection = new ReflectionObject($object);
-
-        $app->initObject($name, $reflection);
-        $app->objects[$name]['instance'] = $object;
-
-        return $app;
+        
+        State::set($name, $object, self::getObjectParams($name, $reflection));
     }
-
-    /**
-     * Pop data from stack
-     * @param string $type
-     * @return mixed
-     */
-    private function popFromStack($type)
-    {
-        return array_pop($this->stack[$type]);
-    }
-
-    /**
-     * Set data to stack
-     * @param sting $type
-     * @param mixed $data
-     */
-    private function pushToStack($type, $data)
-    {
-        array_push($this->stack[$type], $data);
-    }
-
-    /**
-     * Remove current class from stack (for objects that implement their own __call/__get/__set methods)
-     */
-    public static function removeFromStack()
-    {
-        $app = self::getInstance();
-        $app->popFromStack('object');
-    }
-
+   
     /**
      * Switch current object in chain
      * @return \App
      */
     public function sw($name, $args = [])
     {
-        $previousObjectResult = $this->objects[$this->currentObject]['result'];
-        self::__callStatic($name, $args);
-        $this->objects[$name]['result'] = $previousObjectResult;
-        return $this;
+        $objectData = State::get($this->currentObject);
+        $previousObjectResult = $objectData['result'];
+        $app = self::__callStatic($name, $args);
+        State::setResult($name, $previousObjectResult);
+        return $app;
     }
 }

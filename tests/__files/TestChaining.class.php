@@ -17,17 +17,24 @@ class TestChaining
         $this->argument2 = $argument2;
     }
     
-    public function method1() {
+    public function method1() 
+    {
         return $this->argument1;
     }
     
-    public function method2($argument) {
+    public function method2($argument) 
+    {
         return $argument;
     }
     
-    public function method3($argument) {
+    public function method3($argument) 
+    {
         $this->argument1 = $argument;
     }
     
+    public function method4()
+    {
+        return App::TestChaining()->method1()->result;
+    }
     
 }

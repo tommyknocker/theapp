@@ -43,9 +43,9 @@ class AppTest extends PHPUnit_Framework_TestCase
     }
 
     public function testCanCallAppInChain()
-    {
+    {        
         App::TestChaining()->method3(5);
-        $this->assertTrue(App::TestChaining2()->method3(App::TestChaining()->method1()->result)->method1()->result === 5);
+        $this->assertTrue(App::TestChaining2()->method3(App::TestChaining()->method1()->result)->method1()->result === 5);        
     }
 
     public function testCanSetAndGetParamFromObject()

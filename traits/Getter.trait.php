@@ -32,6 +32,8 @@ trait Getter
             $method = App::Format()->camelCaseToUnderScore(substr($method, 3))->result;
 
             return isset($this->{$this->dataFieldName}[$method]) ? $this->{$this->dataFieldName}[$method] : null;
+        } else {
+            return null;
         }
     }
 

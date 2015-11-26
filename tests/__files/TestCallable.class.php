@@ -9,7 +9,7 @@
 class TestCallable
 {
 
-    use TCallable;
+    use \App\Traits\CallMethod;
     
     private $calledName = null;
     private $calledArguments = null;
