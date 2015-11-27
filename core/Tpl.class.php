@@ -189,7 +189,9 @@ class Tpl
     {
         switch (gettype($variable)) {
             case 'string':
-                return '"' . addslashes($variable) . '"';
+                $escapers = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
+                $replacements = array("\\\\", "\\/", "\\\"", "\\n", "", "\\t", "\\f", "\\b");
+                return '"' . str_replace($escapers, $replacements, $variable) . '"';
             case 'boolean':
                 return $variable ? 'true' : 'false';
             case 'integer':
