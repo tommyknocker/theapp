@@ -22,6 +22,7 @@ class HTTP
         302 => 'HTTP/1.1 302 Found',
         304 => 'HTTP/1.1 304 Not Modified',
         400 => 'HTTP/1.1 400 Bad Request',
+        403 => 'HTTP/1.1 403 Forbidden',        
         401 => 'HTTP/1.1 401 Unauthorized',
         404 => 'HTTP/1.1 404 Not Found',
         405 => 'HTTP/1.1 405 Method Not Allowed',
