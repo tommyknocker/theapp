@@ -5,7 +5,8 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  */
 namespace App\Handlers;
-use \App;
+
+use App;
 
 class Index
 {
@@ -23,6 +24,6 @@ class Index
      */
     public function showMain()
     {
-        echo 'Main page event test';
-    }    
+        echo 'TheApp. Tiny, fast and powerful microframework';
+    }
 }

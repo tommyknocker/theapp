@@ -4,10 +4,10 @@
  * The App. Factory. Chainable
  *
  * @author Tommyknocker <tommyknocker@theapp.pro>
- * 
+ *
  * IDE method helpers
  * @method \App\Core\Autoload \App\Core\Autoload
- * @method \App\Core\Config \App\Core\Config 
+ * @method \App\Core\Config \App\Core\Config
  * @method \App\Core\Container \App\Core\Container
  * @method \App\Core\Cron  \App\Core\Cron
  * @method \App\Core\Daemon \App\Core\Daemon
@@ -17,7 +17,7 @@
  * @method \App\Core\Format \App\Core\Format
  * @method \App\Core\Get \App\Core\Get
  * @method \App\Core\Handler \App\Core\Handler
- * @method \App\Core\HTTP \App\Core\HTTP 
+ * @method \App\Core\HTTP \App\Core\HTTP
  * @method \App\Core\Log \Monolog\Logger
  * @method \App\Core\Model \App\Core\Model
  * @method \App\Core\JSON \App\Core\JSON
@@ -32,7 +32,7 @@ class App
 
     /**
      * Current object's name
-     * @var string 
+     * @var string
      */
     private $currentObject = null;
 
@@ -51,8 +51,8 @@ class App
      * @throws Exception
      */
     public function __call($method, $params)
-    {        
-        $objectData = State::get($this->currentObject);
+    {
+        $objectData = \App\Core\State::get($this->currentObject);
 
         if (in_array('result', $params, true)) {
             $params[array_search('result', $params)] = $objectData['result'];
@@ -62,9 +62,9 @@ class App
             $params = array_merge([$method], [$params]);
             $method = '__call';
         }
-        
+
         $objectReflectionMethod = new ReflectionMethod($objectData['instance'], $method);
-        State::setResult($this->currentObject, $objectReflectionMethod->invokeArgs($objectData['instance'], $params));
+        \App\Core\State::setResult($this->currentObject, $objectReflectionMethod->invokeArgs($objectData['instance'], $params));
 
         return $this;
     }
@@ -80,7 +80,7 @@ class App
 
         $app = new self($name);
 
-        $objectData = State::get($name);
+        $objectData = \App\Core\State::get($name);
 
         if ($objectData && $objectData['singleton']) {
             return $app;
@@ -100,8 +100,8 @@ class App
             throw new Exception('Cannot create object from class: ' . $name);
         }
 
-        State::set($name, 
-            $objectInstance->getConstructor() ? $objectInstance->newInstanceArgs($args) : $objectInstance->newInstance(), 
+        \App\Core\State::set($name,
+            $objectInstance->getConstructor() ? $objectInstance->newInstanceArgs($args) : $objectInstance->newInstance(),
             self::getObjectParams($name, $objectInstance));
 
         return $app;
@@ -112,7 +112,7 @@ class App
      */
     private function __clone()
     {
-        
+
     }
 
     /**
@@ -122,7 +122,7 @@ class App
      */
     public function __get($param)
     {
-        $objectData = State::get($this->currentObject);
+        $objectData = \App\Core\State::get($this->currentObject);
 
         switch ($param) {
             case 'instance':
@@ -141,7 +141,7 @@ class App
      */
     public function __set($param, $value)
     {
-        $objectData = State::get($this->currentObject);
+        $objectData = \App\Core\State::get($this->currentObject);
         $objectData['instance']->$param = $value;
     }
 
@@ -160,11 +160,11 @@ class App
      */
     public function __unset($name)
     {
-        $objectData = State::get($this->currentObject);
+        $objectData = \App\Core\State::get($this->currentObject);
 
         switch ($name) {
             case 'instance':
-                State::delete($name);
+                \App\Core\State::delete($name);
                 break;
             default:
                 unset($objectData['instance']->$name);
@@ -176,7 +176,7 @@ class App
      */
     private function __wakeup()
     {
-        
+
     }
 
     /**
@@ -200,9 +200,9 @@ class App
      * @param ReflectionObject $object
      */
     private static function getObjectParams($name, $object)
-    {           
-        $traits = self::getTraitNamesRecursive($object);        
-        
+    {
+        $traits = self::getTraitNamesRecursive($object);
+
         return [
             'singleton' => is_array($traits) && in_array('App\Traits\NoSingleton', $traits, true) ? false : true,
             'callable' => is_array($traits) && in_array('App\Traits\CallMethod', $traits, true)
@@ -222,27 +222,27 @@ class App
             throw new Exception('Wrong params passed');
         }
 
-        $objectData = State::get($name);        
-        
+        $objectData = \App\Core\State::get($name);
+
         if ($objectData && !$overwrite) {
             throw new Exception('Object is already exists while overwrite is not allowed');
         }
 
         $reflection = new ReflectionObject($object);
-        
-        State::set($name, $object, self::getObjectParams($name, $reflection));
+
+        \App\Core\State::set($name, $object, self::getObjectParams($name, $reflection));
     }
-   
+
     /**
      * Switch current object in chain
      * @return \App
      */
     public function sw($name, $args = [])
     {
-        $objectData = State::get($this->currentObject);
+        $objectData = \App\Core\State::get($this->currentObject);
         $previousObjectResult = $objectData['result'];
         $app = self::__callStatic($name, $args);
-        State::setResult($name, $previousObjectResult);
+        \App\Core\State::setResult($name, $previousObjectResult);
         return $app;
     }
 }

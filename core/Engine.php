@@ -16,7 +16,7 @@ class Engine
 
     /**
      * Current engine mode
-     * @var string 
+     * @var string
      */
     private $mode = ENGINE_MODE_WEB;
 
@@ -76,7 +76,7 @@ class Engine
                 ->fire($this->getMode() . ':' . $path)
                 ->fire($this->getMode() . ':' . $path . ':after');
 
-            $isFired = App::Event()->isFired($this->getMode() . ':' . $path)->result || App::Event()->isFired($this->getMode() . ':' . $requestMethod . ':' . $path)->result;
+            $isFired = App::Event()->isFired($this->getMode() . ':' . $path)->result || App::Event()->isFired($this->getMode() . ':'.$requestMethod.':' . $path)->result;
 
             if (!$isFired && $this->getMode() == ENGINE_MODE_WEB) {
                 App::Event()->fire($this->getMode() . ':404');
@@ -158,7 +158,7 @@ class Engine
             throw new Exception('Handlers directory is not readable');
         }
 
-        $files = glob(DIR_HANDLERS . '*.handler.php');
+        $files = glob(DIR_HANDLERS . '*.php');
 
         if (!$files) {
             throw new Exception('No handlers found. Engine stopped');
@@ -167,7 +167,7 @@ class Engine
         foreach ($files as $file) {
 
             if (!is_readable($file)) {
-                App::Log()->addWarning('Cannot read handler {file}', $file);
+                App::Log()->addWarning('Cannot read handler {file}', ['file' => $file]);
                 continue;
             }
 

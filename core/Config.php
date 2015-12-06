@@ -50,7 +50,6 @@ class Config
     public function __get($name)
     {
         $key = $this->formatKey(str_replace('_', '.', $name));
-
         $config = App::Container()->config;
 
         foreach ($key as $keyPart) {
@@ -64,7 +63,7 @@ class Config
                 return null;
             }
         }
-
+        
         return $config;
     }
 

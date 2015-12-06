@@ -7,6 +7,8 @@
  */
 namespace App\Core;
 
+use App;
+
 class Format
 {
 
@@ -91,7 +93,7 @@ class Format
 
         return $result;
     }
-    
+
     /**
      * Convert camel case to underscore
      * @param string $string
@@ -105,5 +107,22 @@ class Format
             $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
         }
         return implode('_', $result);
-    }    
+    }
+
+    /**
+     * Сut text if its length more than allowed characters
+     * @param type $text
+     */
+    public function preview($text, $stripTags = false)
+    {
+        if ($stripTags) {
+            $text = strip_tags($text);
+        }
+
+        if (mb_strlen($text, "UTF-8") > App::Config()->text->preview->length) {
+            $text = mb_substr($text, 0, App::Config()->text->preview->length, "UTF-8") . '...';
+        }
+        
+        return $text;
+    }
 }

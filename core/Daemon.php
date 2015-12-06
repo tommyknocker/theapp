@@ -23,26 +23,23 @@ class Daemon
     }
 
     /**
-     * Daemon initialization
-     * @param string $newDaemonName
-     * @param string $description
+     * Set daemon callback function
+     * @param callable $callback
+     * @throws \Exception
      */
-    public function setName($newDaemonName, $description = '')
+    public function setCallback($callback)
     {
-
-        $this->daemons[$newDaemonName] = [
-            'pid' => 0,
-            'name' => $newDaemonName,
-            'delay' => App::Config()->daemon_delay
-        ];
-
-        if ($description) {
-            $this->daemons[$newDaemonName]['description'] = $description;
+        if (!$this->current) {
+            throw new Exception('Try to select daemon first');
         }
 
-        $this->current = $newDaemonName;
-    }
+        if (!is_callable($callback)) {
+            throw new Exception('Daemon callback is not callable');
+        }
 
+        $this->daemons[$this->current]['callback'] = $callback;
+    }    
+    
     /**
      * Set time delay
      * @param int $time ms
@@ -63,23 +60,26 @@ class Daemon
     }
 
     /**
-     * Set daemon callback function
-     * @param callable $callback
-     * @throws \Exception
+     * Daemon initialization
+     * @param string $newDaemonName
+     * @param string $description
      */
-    public function setCallback($callback)
+    public function setName($newDaemonName, $description = '')
     {
-        if (!$this->current) {
-            throw new Exception('Try to select daemon first');
+
+        $this->daemons[$newDaemonName] = [
+            'pid' => 0,
+            'name' => $newDaemonName,
+            'delay' => App::Config()->daemon_delay
+        ];
+
+        if ($description) {
+            $this->daemons[$newDaemonName]['description'] = $description;
         }
 
-        if (!is_callable($callback)) {
-            throw new Exception('Daemon callback is not callable');
-        }
-
-        $this->daemons[$this->current]['callback'] = $callback;
+        $this->current = $newDaemonName;
     }
-
+    
     /**
      * Our main daemon process
      */

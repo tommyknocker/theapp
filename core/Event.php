@@ -35,7 +35,7 @@ class Event
 
     /**
      * Randomly generated chain replacer
-     * @var string 
+     * @var string
      */
     private $chainReplacer = "";
 
@@ -112,7 +112,7 @@ class Event
     /**
      * Subscribe class method to particular event
      * Event subscription is only allowed in handler's init() function
-     * 
+     *
      * @param string $event Event to register for
      * @param string $classMethod
      * @param int $priority
@@ -159,6 +159,7 @@ class Event
             }
 
             $this->eventEmitter->on($event, [new $initMethod['class'], $classMethod], $priority);
+
         } catch (Exception $e) {
             App::Log()->addError('Cannot register method {method} to event {event}: {message}', ['method' => $classMethod, 'event' => $event, 'message' => $e->getMessage()]);
         }
@@ -166,14 +167,14 @@ class Event
 
     /**
      * Fire an event
-     * 
+     *
      * @param string $event
      * @param array $arguments
      */
     public function fire($event, $arguments = array())
     {
         $calledEvent = $event;
-        
+
         if (strpos($event, '/') !== false) {
             $event = rtrim($event, '/') . '/';
             $event = $this->proceedExpressions($event);

@@ -17,6 +17,11 @@ class Session
         $this->started = ini_get('session.auto_start');
     }
 
+    public function __destruct()
+    {
+        session_write_close();
+    }
+    
     public function start()
     {
         if (!$this->started) {
@@ -24,8 +29,4 @@ class Session
         }
     }
 
-    public function __destruct()
-    {
-        session_write_close();
-    }
 }

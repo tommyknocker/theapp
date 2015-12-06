@@ -10,9 +10,9 @@ class AppTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        require_once '__files/TestChaining.class.php';
-        require_once '__files/TestCallable.class.php';
-        require_once '__files/TestNoSingleton.class.php';
+        require_once '__files/TestChaining.php';
+        require_once '__files/TestCallable.php';
+        require_once '__files/TestNoSingleton.php';
     }
 
     public function testArgumentsPassedToConstruct()
@@ -43,9 +43,9 @@ class AppTest extends PHPUnit_Framework_TestCase
     }
 
     public function testCanCallAppInChain()
-    {        
+    {
         App::TestChaining()->method3(5);
-        $this->assertTrue(App::TestChaining2()->method3(App::TestChaining()->method1()->result)->method1()->result === 5);        
+        $this->assertTrue(App::TestChaining2()->method3(App::TestChaining()->method1()->result)->method1()->result === 5);
     }
 
     public function testCanSetAndGetParamFromObject()
@@ -60,16 +60,16 @@ class AppTest extends PHPUnit_Framework_TestCase
         unset(App::TestChaining2()->param);
         $this->assertNull(@App::TestChaining2()->param);
     }
-    
+
     public function testCanUnsetObjectIntance() {
         unset(App::TestChaining2()->instance);
         try{
-            App::TestChaining2()->instance;            
+            App::TestChaining2()->instance;
         } catch (Exception $ex) {
             $this->assertEquals('Class TestChaining2 does not exist', $ex->getMessage());
         }
     }
-    
+
     public function testObjectWillBeInitializedInEachCallIfTNoSingletonTraitIsUsed()
     {
         $this->assertTrue(App::TestNoSingleton(1)->method1()->result === 1);
@@ -83,5 +83,5 @@ class AppTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(App::TestCallable()->method1()->result === 'testMethod');
         $this->assertTrue(App::TestCallable()->method2()->result === ['param1', 'param2']);
     }
-       
+
 }
