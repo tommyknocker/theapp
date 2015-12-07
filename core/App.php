@@ -6,7 +6,6 @@
  * @author Tommyknocker <tommyknocker@theapp.pro>
  *
  * IDE method helpers
- * @method \App\Core\Autoload \App\Core\Autoload
  * @method \App\Core\Config \App\Core\Config
  * @method \App\Core\Container \App\Core\Container
  * @method \App\Core\Cron  \App\Core\Cron
