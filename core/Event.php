@@ -158,7 +158,10 @@ class Event
                 throw new Exception('Method must be public');
             }
 
-            $this->eventEmitter->on($event, [new $initMethod['class'], $classMethod], $priority);
+            $wrapper = function() use ($initMethod, $classMethod) {
+                return call_user_func_array([new $initMethod['class'], $classMethod], func_get_args());
+            };
+            $this->eventEmitter->on($event, $wrapper, $priority);
 
         } catch (Exception $e) {
             App::Log()->addError('Cannot register method {method} to event {event}: {message}', ['method' => $classMethod, 'event' => $event, 'message' => $e->getMessage()]);
