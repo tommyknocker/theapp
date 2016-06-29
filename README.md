@@ -1,4 +1,4 @@
-## TheApp.pro 
+## The App.
 **Tiny, fast and powerful microframework.**
 
 The App is in active development state. Complete documentation will be available soon.
